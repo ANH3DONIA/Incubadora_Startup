@@ -37,6 +37,10 @@ uploads/
 backend/uploads/
 *.enc
 
+# Documentation & Audits
+AUDIT*.md
+part*.md
+
 # IDEs
 .vscode
 .idea
