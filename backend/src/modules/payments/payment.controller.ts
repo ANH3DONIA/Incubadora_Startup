@@ -128,27 +128,4 @@ export class PaymentController {
       next(error);
     }
   }
-
-  // ==========================================================================
-  // ENDPOINTS LEGACY (COMPATIBILIDAD)
-  // ==========================================================================
-
-  static async createCheckout(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const result = await paymentService.createStripeCheckout(req.body, req.user!.id);
-      return sendResponse(res, 200, result, 'Sesión de checkout creada');
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async createCryptoOrder(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const result = await paymentService.createBinanceOrder(req.body, req.user!.id);
-      return sendResponse(res, 200, result, 'Orden de Binance Pay generada');
-    } catch (error) {
-      next(error);
-    }
-  }
 }
-

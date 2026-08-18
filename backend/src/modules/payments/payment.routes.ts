@@ -8,8 +8,6 @@ import {
   createInvestmentSchema,
   createCryptoInvestmentSchema,
   confirmSandboxSchema,
-  createCheckoutSchema,
-  createCryptoOrderSchema,
 } from './payment.schema.js';
 
 const router = Router();
@@ -71,23 +69,4 @@ router.post(
 
 router.get('/my-investments', authenticate, PaymentController.getMyInvestments);
 
-// ============================================================================
-// ENDPOINTS LEGACY (COMPATIBILIDAD)
-// ============================================================================
-router.post(
-  '/checkout',
-  authenticate,
-  validateRequest(createCheckoutSchema),
-  PaymentController.createCheckout
-);
-
-router.post(
-  '/crypto/create-order',
-  authenticate,
-  validateRequest(createCryptoOrderSchema),
-  PaymentController.createCryptoOrder
-);
-
 export default router;
-
-

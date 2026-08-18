@@ -27,7 +27,9 @@ import {
   Users,
   X,
   Zap,
+  ArrowRight,
 } from 'lucide-react';
+import { StartupPitchSession, StartupDetailRating } from '@/types/dashboard';
 
 export default function StartupDetailPage() {
   const { id } = useParams();
@@ -335,7 +337,7 @@ export default function StartupDetailPage() {
                 Quick Pitches en Vivo Programados ({startup.pitchSessions.length})
               </h2>
               <div className="space-y-3">
-                {startup.pitchSessions.map((session: any) => (
+                {startup.pitchSessions.map((session: StartupPitchSession) => (
                   <div
                     key={session.id}
                     className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800"
@@ -404,7 +406,7 @@ export default function StartupDetailPage() {
                   Esta startup aún no tiene evaluaciones registradas por inversionistas.
                 </p>
               ) : (
-                startup.ratings.map((rate: any) => (
+                startup.ratings.map((rate: StartupDetailRating) => (
                   <div key={rate.id} className="border-b border-slate-100 dark:border-slate-800/80 pb-4 last:border-0 space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">

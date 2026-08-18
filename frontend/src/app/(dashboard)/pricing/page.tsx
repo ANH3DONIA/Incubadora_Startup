@@ -21,11 +21,12 @@ import {
   QrCode,
   ShieldCheck,
 } from 'lucide-react';
+import { PricingPlanItem } from '@/types/dashboard';
 
 export default function PricingPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PricingPlanItem | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'binance'>('stripe');
   
   // Checkout Form State
@@ -47,7 +48,7 @@ export default function PricingPage() {
     periodEnd: string;
   } | null>(null);
 
-  const plans = [
+  const plans: PricingPlanItem[] = [
     {
       id: 'free',
       name: 'Free Starter',
@@ -103,7 +104,7 @@ export default function PricingPage() {
     },
   ];
 
-  const handleOpenCheckout = (plan: any) => {
+  const handleOpenCheckout = (plan: PricingPlanItem) => {
     if (plan.id === 'free') return;
     setSelectedPlan(plan);
     setCheckoutError(null);

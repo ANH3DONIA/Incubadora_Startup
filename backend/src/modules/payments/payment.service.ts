@@ -7,10 +7,10 @@ import {
   CreateCryptoSubscriptionDto,
   CreateInvestmentDto,
   CreateCryptoInvestmentDto,
-  CreateCheckoutDto,
-  CreateCryptoOrderDto,
 } from './payment.schema.js';
 import { Prisma, SubscriptionPlan } from '@prisma/client';
+
+export const SUBSCRIPTION_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 días de vigencia
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key';
 const stripe = new Stripe(stripeSecret, {
@@ -311,7 +311,7 @@ export class PaymentService {
   }
 
   async activateSubscriptionInDb(userId: string, plan: 'PRO' | 'ENTERPRISE', sessionId?: string) {
-    const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 días de vigencia
+    const periodEnd = new Date(Date.now() + SUBSCRIPTION_PERIOD_MS);
     const planEnum = plan === 'ENTERPRISE' ? SubscriptionPlan.ENTERPRISE : SubscriptionPlan.PRO;
 
     await prisma.subscription.upsert({
@@ -339,7 +339,7 @@ export class PaymentService {
     return prisma.subscription.update({
       where: { userId },
       data: {
-        status: 'CANCELLED',
+        status: 'CANCELED',
         plan: 'FREE',
       },
     });
@@ -403,42 +403,7 @@ export class PaymentService {
       orderBy: { createdAt: 'desc' },
     });
   }
-
-  // ==========================================================================
-  // 4. MÉTODOS DE COMPATIBILIDAD LEGACY
-  // ==========================================================================
-
-  async createStripeCheckout(data: CreateCheckoutDto, userId: string) {
-    if (data.type === 'SUBSCRIPTION' || data.plan) {
-      return this.createSubscriptionCheckout({
-        plan: (data.plan as any) || (data.amount && data.amount > 100 ? 'ENTERPRISE' : 'PRO'),
-        successUrl: data.successUrl,
-        cancelUrl: data.cancelUrl,
-      }, userId);
-    }
-
-    return this.createInvestmentCheckout({
-      startupId: data.startupId || '',
-      amount: data.amount || 100,
-      successUrl: data.successUrl,
-      cancelUrl: data.cancelUrl,
-    }, userId);
-  }
-
-  async createBinanceOrder(data: CreateCryptoOrderDto, userId: string) {
-    if (data.plan) {
-      return this.createCryptoSubscriptionOrder({
-        plan: (data.plan as any) || 'PRO',
-        currency: data.currency || 'USDT',
-      }, userId);
-    }
-
-    return this.createCryptoInvestmentOrder({
-      startupId: data.startupId || '',
-      amount: data.amount,
-      currency: data.currency || 'USDT',
-    }, userId);
-  }
 }
+
 
 

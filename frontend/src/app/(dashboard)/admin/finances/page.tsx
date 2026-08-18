@@ -6,9 +6,19 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { StatCard } from '@/components/ui/StatCard';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { DollarSign, CreditCard, CheckCircle2, ArrowDownRight } from 'lucide-react';
+import { FinancialTransaction } from '@/types/dashboard';
+
+interface FinancesData {
+  totals?: {
+    overall: number;
+    fiat: number;
+    crypto: number;
+  };
+  transactions?: FinancialTransaction[];
+}
 
 export default function AdminFinancesPage() {
-  const [finances, setFinances] = useState<any>(null);
+  const [finances, setFinances] = useState<FinancesData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,7 +99,7 @@ export default function AdminFinancesPage() {
                   </td>
                 </tr>
               ) : (
-                finances.transactions.map((tx: any) => (
+                finances.transactions.map((tx) => (
                   <tr key={tx.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
                     <td className="p-4 font-bold text-slate-900 dark:text-white">
                       {tx.investor?.firstName} {tx.investor?.lastName}

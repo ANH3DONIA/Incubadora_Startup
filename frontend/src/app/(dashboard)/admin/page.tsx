@@ -8,8 +8,21 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Users, Building2, Video, DollarSign, Shield, ArrowRight } from 'lucide-react';
 
+import { AdminUserItem, AuditLogEntry } from '@/types/dashboard';
+
+interface AdminDashboardData {
+  stats?: {
+    totalUsers: number;
+    totalStartups: number;
+    totalPitches: number;
+    totalInvested: number;
+  };
+  recentUsers?: AdminUserItem[];
+  recentAuditLogs?: AuditLogEntry[];
+}
+
 export default function AdminOverviewPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AdminDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,7 +91,7 @@ export default function AdminOverviewPage() {
           </div>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {data?.recentUsers?.map((u: any) => (
+            {data?.recentUsers?.map((u) => (
               <div key={u.id} className="py-3 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-slate-900 dark:text-white">{u.firstName} {u.lastName}</p>
@@ -104,7 +117,7 @@ export default function AdminOverviewPage() {
           </div>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-[11px]">
-            {data?.recentAuditLogs?.map((log: any) => (
+            {data?.recentAuditLogs?.map((log) => (
               <div key={log.id} className="py-2.5 flex items-center justify-between">
                 <div className="space-y-0.5">
                   <p className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-xs">{log.action}</p>

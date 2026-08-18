@@ -5,9 +5,10 @@ import { api } from '@/lib/api';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { formatDate } from '@/lib/utils';
 import { Users, CheckCircle, XCircle, ShieldAlert } from 'lucide-react';
+import { AdminUserItem } from '@/types/dashboard';
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUserItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -25,7 +26,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, []);
 
-  const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+  const handleToggleStatus = async (userId: string, currentStatus: boolean = true) => {
     try {
       await api.patch(`/admin/users/${userId}/status`, { isActive: !currentStatus });
       await fetchUsers();
@@ -85,7 +86,7 @@ export default function AdminUsersPage() {
                   <td className="p-4 text-slate-500 dark:text-slate-400">{formatDate(u.createdAt)}</td>
                   <td className="p-4 text-right">
                     <button
-                      onClick={() => handleToggleStatus(u.id, u.isActive)}
+                      onClick={() => handleToggleStatus(u.id, u.isActive ?? true)}
                       className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                         u.isActive
                           ? 'border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400'

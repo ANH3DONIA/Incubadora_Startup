@@ -5,8 +5,6 @@ import { registerSchema, loginSchema, changePasswordSchema } from '../src/module
 import {
   createSubscriptionSchema,
   createInvestmentSchema,
-  createCheckoutSchema,
-  createCryptoOrderSchema,
 } from '../src/modules/payments/payment.schema.js';
 import { createEventSchema } from '../src/modules/calendar/calendar.schema.js';
 
