@@ -30,8 +30,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-slate-900 border ${
-        isPresenter ? 'border-teal-500 shadow-teal-500/10 shadow-lg' : 'border-slate-800'
+      className={`relative overflow-hidden rounded-2xl bg-[#0b0f19] border ${
+        isPresenter ? 'border-blue-500 ring-1 ring-blue-500/50' : 'border-slate-800'
       } flex items-center justify-center aspect-video w-full`}
     >
       {stream && !isVideoOff ? (
@@ -44,20 +44,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         />
       ) : (
         <div className="flex flex-col items-center gap-2 text-slate-500">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-800 text-slate-400">
-            <User className="h-8 w-8" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-slate-400">
+            <User className="h-7 w-7" />
           </div>
           <span className="text-xs font-medium text-slate-400">{userName}</span>
         </div>
       )}
 
       {/* Floating Info Overlay */}
-      <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-xl bg-black/60 px-3 py-1.5 backdrop-blur">
+      <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-xl bg-black/60 px-3 py-1.5 backdrop-blur border border-white/10">
         <span className="text-xs font-semibold text-white truncate max-w-[120px]">
           {userName}
         </span>
         {userRole && (
-          <span className="rounded bg-teal-600/80 px-1.5 py-0.5 text-[9px] font-bold text-white uppercase">
+          <span className="rounded bg-blue-600/80 px-1.5 py-0.5 text-[9px] font-bold text-white uppercase">
             {userRole}
           </span>
         )}

@@ -37,33 +37,33 @@ export const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
   const getIndustryBadgeStyle = (ind: string) => {
     switch (ind.toLowerCase()) {
       case 'fintech':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60';
+        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60';
       case 'ai':
         return 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800/60';
       case 'healthtech':
-        return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800/60';
+        return 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/50 dark:text-violet-300 dark:border-violet-800/60';
       case 'cleantech':
-        return 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800/60';
+        return 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800/60';
       default:
         return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
     }
   };
 
   return (
-    <div className="group relative flex flex-col justify-between rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-xl hover:border-teal-500/40 hover:-translate-y-1 transition-all duration-300 dark:border-slate-800/80 dark:bg-[#0e1526]">
+    <div className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 hover:border-blue-500/40 transition-all duration-200 dark:border-slate-800/80 dark:bg-[#0b0f19] dark:hover:border-blue-500/30">
       <div>
         {/* Top Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white font-black text-lg shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold text-base group-hover:scale-105 transition-transform">
               {startup.name.slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <h3 className="font-extrabold text-base text-slate-900 group-hover:text-teal-600 transition-colors dark:text-white line-clamp-1">
+              <h3 className="font-bold text-sm text-slate-900 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white line-clamp-1">
                 {startup.name}
               </h3>
               <div className="flex items-center gap-1.5 mt-1">
-                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${getIndustryBadgeStyle(startup.industry)}`}>
+                <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold border ${getIndustryBadgeStyle(startup.industry)}`}>
                   {startup.industry}
                 </span>
                 <span className="text-[11px] font-medium text-slate-400">
@@ -75,7 +75,7 @@ export const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
 
           {startup.matchScore !== undefined && (
             <div
-              className="flex items-center gap-1 rounded-full border border-teal-500/30 bg-teal-500/10 px-2.5 py-1 text-[11px] font-bold text-teal-600 dark:text-teal-400"
+              className="flex items-center gap-1 rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400"
               title="Afinidad con tus preferencias de inversión"
             >
               <Sparkles className="h-3 w-3" />
@@ -85,7 +85,7 @@ export const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
         </div>
 
         {/* Description */}
-        <p className="mt-4 line-clamp-3 text-xs text-slate-600 leading-relaxed dark:text-slate-400">
+        <p className="mt-3.5 line-clamp-3 text-xs text-slate-600 leading-relaxed dark:text-slate-400">
           {startup.description}
         </p>
 
@@ -99,11 +99,11 @@ export const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
               </span>
             </div>
           ) : (
-            <span className="text-[11px] text-slate-400 font-medium italic">Nueva en incubadora</span>
+            <span className="text-[11px] text-slate-400 font-medium italic">En evaluación</span>
           )}
 
           {startup.pitchDeckUrl && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-500/20">
               <ShieldCheck className="h-3 w-3" />
               Deck Cifrado
             </span>
@@ -112,7 +112,7 @@ export const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
       </div>
 
       {/* Progress & Bottom Actions */}
-      <div className="mt-6 border-t border-slate-100 pt-4 dark:border-slate-800/80">
+      <div className="mt-5 border-t border-slate-100 pt-3.5 dark:border-slate-800/80">
         <div className="flex justify-between text-xs font-semibold mb-1.5">
           <span className="text-slate-500">
             Fondeado: <b className="text-slate-900 dark:text-white font-bold">{formatCurrency(startup.amountRaised, 'USD', true)}</b>
@@ -123,21 +123,21 @@ export const StartupCard: React.FC<StartupCardProps> = ({ startup }) => {
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+        <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-500"
+            className="h-full rounded-full bg-blue-600 dark:bg-blue-500 transition-all duration-500"
             style={{ width: `${percentage}%` }}
           />
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-xs font-bold text-teal-600 dark:text-teal-400">
-            {percentage}% de la ronda
+        <div className="mt-3.5 flex items-center justify-between">
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            {percentage}% financiado
           </span>
 
           <Link
             href={`/startup/${startup.id}`}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 hover:bg-teal-600 hover:text-white px-3.5 py-1.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-teal-600 dark:hover:text-white transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white px-3 py-1.5 text-xs font-semibold text-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-blue-600 dark:hover:text-white transition-all"
           >
             <span>Ver Ficha VC</span>
             <ArrowRight className="h-3.5 w-3.5" />

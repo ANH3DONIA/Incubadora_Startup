@@ -53,6 +53,7 @@ export default function PitchRoomPage() {
 
   // Local media states
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -156,6 +157,7 @@ export default function PitchRoomPage() {
     navigator.mediaDevices
       ?.getUserMedia({ video: true, audio: true })
       .then((stream) => {
+        localStreamRef.current = stream;
         setLocalStream(stream);
       })
       .catch((err) => {
@@ -168,8 +170,9 @@ export default function PitchRoomPage() {
         socket.disconnect();
       }
       resetRoom();
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+        localStreamRef.current = null;
       }
     };
   }, [inWaitingRoom, user, roomId]);
@@ -264,18 +267,18 @@ export default function PitchRoomPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-slate-950 text-white overflow-hidden">
+    <div className="flex h-screen w-screen flex-col bg-[#030712] text-white overflow-hidden">
       {/* Top Bar */}
-      <div className="flex h-16 items-center justify-between border-b border-slate-800 px-6 bg-slate-900/90 backdrop-blur z-20">
+      <div className="flex h-16 items-center justify-between border-b border-slate-800 px-6 bg-[#0b0f19]/90 backdrop-blur z-20">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white font-bold text-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-xs">
             QP
           </div>
           <div>
-            <h2 className="text-sm font-bold truncate max-w-xs sm:max-w-md">
+            <h2 className="text-xs font-bold truncate max-w-xs sm:max-w-md">
               {sessionDetails?.pitchSession?.title || 'Quick Pitch Room'}
             </h2>
-            <p className="text-[11px] text-teal-400">
+            <p className="text-[10px] text-blue-400 font-semibold">
               {sessionDetails?.pitchSession?.startup?.name || 'Startup Pitch'}
             </p>
           </div>
@@ -290,8 +293,8 @@ export default function PitchRoomPage() {
 
         {/* Participants count & Host action */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-            <Users className="h-3.5 w-3.5 text-teal-400" />
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 px-3 py-1 text-xs text-slate-300">
+            <Users className="h-3.5 w-3.5 text-blue-400" />
             <span>{participants.length} conectados</span>
           </div>
 
@@ -300,7 +303,7 @@ export default function PitchRoomPage() {
               {!isPitchActive ? (
                 <button
                   onClick={handleStartPitch}
-                  className="flex items-center gap-1.5 rounded-xl bg-teal-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-teal-400 shadow-md shadow-teal-500/20 transition"
+                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition"
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
                   <span>Iniciar 5 Min</span>
@@ -342,10 +345,10 @@ export default function PitchRoomPage() {
               .map((p) => (
                 <div
                   key={p.socketId}
-                  className="flex items-center justify-between rounded-xl bg-slate-900 border border-slate-800 p-3"
+                  className="flex items-center justify-between rounded-xl bg-[#0b0f19] border border-slate-800 p-3"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-teal-400 font-bold text-xs">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-blue-400 font-bold text-xs">
                       {p.name.slice(0, 2).toUpperCase()}
                     </div>
                     <span className="text-xs font-semibold text-slate-200 truncate max-w-[90px]">
@@ -371,10 +374,10 @@ export default function PitchRoomPage() {
       </div>
 
       {/* Bottom Control Dock */}
-      <div className="h-16 border-t border-slate-800 bg-slate-900/90 backdrop-blur px-6 flex items-center justify-center gap-4 z-20">
+      <div className="h-16 border-t border-slate-800 bg-[#0b0f19]/90 backdrop-blur px-6 flex items-center justify-center gap-4 z-20">
         <button
           onClick={toggleMic}
-          className={`flex h-10 w-10 items-center justify-center rounded-2xl transition ${
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
             isMuted ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
           }`}
           title={isMuted ? 'Desmutear' : 'Mutear micrófono'}
@@ -384,7 +387,7 @@ export default function PitchRoomPage() {
 
         <button
           onClick={toggleVideo}
-          className={`flex h-10 w-10 items-center justify-center rounded-2xl transition ${
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
             isVideoOff ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
           }`}
           title={isVideoOff ? 'Encender cámara' : 'Apagar cámara'}
@@ -394,8 +397,8 @@ export default function PitchRoomPage() {
 
         <button
           onClick={handleScreenShare}
-          className={`flex h-10 w-10 items-center justify-center rounded-2xl transition ${
-            isScreenSharing ? 'bg-teal-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
+            isScreenSharing ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
           }`}
           title="Compartir pantalla"
         >
@@ -404,7 +407,7 @@ export default function PitchRoomPage() {
 
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-red-600/90 text-white hover:bg-red-700 transition"
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600/90 text-white hover:bg-red-700 transition"
           title="Salir de la sala"
         >
           <PhoneOff className="h-4 w-4" />

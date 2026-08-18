@@ -12,16 +12,16 @@ const icons = {
 };
 
 const styles = {
-  success: 'bg-white dark:bg-[#0e1526] border-emerald-500/30 text-emerald-950 dark:text-emerald-200 shadow-emerald-500/10',
-  error: 'bg-white dark:bg-[#0e1526] border-red-500/30 text-red-950 dark:text-red-200 shadow-red-500/10',
-  info: 'bg-white dark:bg-[#0e1526] border-teal-500/30 text-teal-950 dark:text-teal-200 shadow-teal-500/10',
-  warning: 'bg-white dark:bg-[#0e1526] border-amber-500/30 text-amber-950 dark:text-amber-200 shadow-amber-500/10',
+  success: 'bg-white dark:bg-[#0b0f19] border-emerald-500/30 text-emerald-950 dark:text-emerald-200',
+  error: 'bg-white dark:bg-[#0b0f19] border-red-500/30 text-red-950 dark:text-red-200',
+  info: 'bg-white dark:bg-[#0b0f19] border-blue-500/30 text-blue-950 dark:text-blue-200',
+  warning: 'bg-white dark:bg-[#0b0f19] border-amber-500/30 text-amber-950 dark:text-amber-200',
 };
 
 const iconColors = {
   success: 'text-emerald-500',
   error: 'text-red-500',
-  info: 'text-teal-500',
+  info: 'text-blue-500',
   warning: 'text-amber-500',
 };
 
@@ -42,7 +42,7 @@ export const ToastContainer: React.FC = () => {
           <div
             key={toast.id}
             role="alert"
-            className={`pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur-md transition-all duration-300 animate-fade-in ${styles[toast.type]}`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 backdrop-blur-md transition-all duration-300 animate-fade-in ${styles[toast.type]}`}
           >
             <Icon className={`h-5 w-5 shrink-0 mt-0.5 ${iconColors[toast.type]}`} />
             <div className="flex-1 space-y-0.5">

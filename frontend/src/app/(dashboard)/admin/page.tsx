@@ -32,12 +32,12 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white">Panel de Control de Administrador</h1>
-        <p className="text-xs text-slate-500 mt-1">Supervisa usuarios, transacciones y registros de seguridad</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Panel de Control de Administrador</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Supervisa usuarios, transacciones y registros de seguridad</p>
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
           title="Total Usuarios"
           value={data?.stats?.totalUsers || 0}
@@ -48,31 +48,31 @@ export default function AdminOverviewPage() {
           title="Startups en Plataforma"
           value={data?.stats?.totalStartups || 0}
           icon={Building2}
-          iconBg="bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400"
+          iconBg="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
         />
         <StatCard
           title="Sesiones de Pitch"
           value={data?.stats?.totalPitches || 0}
           icon={Video}
-          iconBg="bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+          iconBg="bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
         />
         <StatCard
           title="Volumen Invertido"
           value={formatCurrency(data?.stats?.totalInvested || 0)}
           icon={DollarSign}
-          iconBg="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+          iconBg="bg-slate-100 text-slate-800 dark:bg-slate-800/80 dark:text-slate-200"
         />
       </div>
 
       {/* Recent Users & Activity Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* Recent Users */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               Usuarios Registrados Recientes
             </h3>
-            <Link href="/admin/users" className="text-xs font-bold text-teal-600 hover:underline">
+            <Link href="/admin/users" className="text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400">
               Ver todos
             </Link>
           </div>
@@ -82,9 +82,9 @@ export default function AdminOverviewPage() {
               <div key={u.id} className="py-3 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-slate-900 dark:text-white">{u.firstName} {u.lastName}</p>
-                  <p className="text-[11px] text-slate-500">{u.email}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">{u.email}</p>
                 </div>
-                <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
+                <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase">
                   {u.role}
                 </span>
               </div>
@@ -93,12 +93,12 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Recent Audit Logs */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               Actividad de Seguridad Reciente
             </h3>
-            <Link href="/admin/audit" className="text-xs font-bold text-teal-600 hover:underline">
+            <Link href="/admin/audit" className="text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400">
               Ver logs completos
             </Link>
           </div>

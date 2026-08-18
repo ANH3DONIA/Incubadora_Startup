@@ -21,6 +21,7 @@ import {
   Copy,
   ExternalLink,
   Sparkles,
+  X,
 } from 'lucide-react';
 
 export default function PitchSessionsPage() {
@@ -154,9 +155,9 @@ export default function PitchSessionsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'LIVE':
-        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 animate-pulse';
       case 'SCHEDULED':
-        return 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
       case 'COMPLETED':
         return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
       case 'CANCELLED':
@@ -172,15 +173,15 @@ export default function PitchSessionsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-600 dark:text-teal-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
               <Sparkles className="h-3.5 w-3.5" />
               Gestión de Eventos en Vivo
             </span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-2">
             Mis Sesiones de Pitch
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Crea, administra, abre o concluye salas de presentación en vivo ante inversores
           </p>
         </div>
@@ -191,7 +192,7 @@ export default function PitchSessionsPage() {
               setFormError(null);
               setModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-6 py-3.5 text-xs font-bold text-white hover:bg-teal-700 shadow-lg shadow-teal-600/25 transition self-start sm:self-auto hover:scale-[1.02]"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 transition self-start sm:self-auto hover:scale-[1.02]"
           >
             <Plus className="h-4 w-4" />
             <span>Programar Nuevo Pitch</span>
@@ -201,16 +202,16 @@ export default function PitchSessionsPage() {
 
       {actionMessage && (
         <div
-          className={`flex items-center gap-2 rounded-2xl p-4 text-xs font-semibold border ${
+          className={`flex items-center gap-2 rounded-xl p-3.5 text-xs font-medium border ${
             actionMessage.type === 'success'
-              ? 'border-teal-500/30 bg-teal-50 text-teal-900 dark:bg-teal-950/50 dark:text-teal-300'
+              ? 'border-blue-500/30 bg-blue-50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-300'
               : 'border-red-500/30 bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-300'
           }`}
         >
           {actionMessage.type === 'success' ? (
-            <CheckCircle2 className="h-5 w-5 text-teal-600 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+            <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
           )}
           <span>{actionMessage.text}</span>
         </div>
@@ -228,9 +229,9 @@ export default function PitchSessionsPage() {
           <button
             key={tab.key}
             onClick={() => setStatusFilter(tab.key as any)}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
               statusFilter === tab.key
-                ? 'bg-teal-600 text-white shadow-sm'
+                ? 'bg-blue-600 text-white'
                 : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
             }`}
           >
@@ -246,7 +247,7 @@ export default function PitchSessionsPage() {
           action={
             <Link
               href="/my-startup"
-              className="rounded-2xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20"
+              className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-500"
             >
               Registrar Mi Startup
             </Link>
@@ -262,7 +263,7 @@ export default function PitchSessionsPage() {
                 setFormError(null);
                 setModalOpen(true);
               }}
-              className="rounded-2xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20"
+              className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-500"
             >
               Programar Quick Pitch
             </button>
@@ -275,11 +276,11 @@ export default function PitchSessionsPage() {
             return (
               <div
                 key={session.id}
-                className="flex flex-col justify-between rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-lg dark:border-slate-800 dark:bg-[#0e1526] transition-all space-y-5"
+                className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 dark:border-slate-800/80 dark:bg-[#0b0f19] transition-all space-y-5"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className={`rounded-full px-3 py-0.5 text-[10px] font-extrabold border ${getStatusBadge(session.status)}`}>
+                    <span className={`rounded-md px-2.5 py-0.5 text-[10px] font-bold border ${getStatusBadge(session.status)}`}>
                       {session.status}
                     </span>
                     <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
@@ -288,22 +289,22 @@ export default function PitchSessionsPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-base font-black text-slate-900 dark:text-white line-clamp-2">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2">
                     {session.title}
                   </h3>
 
-                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-teal-600" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                     {formatDate(session.scheduledFor)}
                   </p>
                 </div>
 
                 {/* Actions Grid */}
-                <div className="space-y-2.5 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5">
                   {/* Primary Link to Live Room */}
                   <Link
                     href={`/pitch-room/${roomId}`}
-                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-teal-600 py-3 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20 transition"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 transition"
                   >
                     <Play className="h-3.5 w-3.5 fill-current" />
                     <span>Entrar a la Sala Virtual</span>
@@ -314,18 +315,18 @@ export default function PitchSessionsPage() {
                     <button
                       onClick={() => handleCopyLink(roomId)}
                       title="Copiar enlace de invitación"
-                      className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition"
+                      className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition"
                     >
-                      {copiedId === roomId ? <Check className="h-3.5 w-3.5 text-teal-600" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copiedId === roomId ? <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
 
                     {session.status !== 'COMPLETED' && (
                       <button
                         onClick={() => handleUpdateStatus(session.id, 'COMPLETED')}
                         title="Marcar como Concluido"
-                        className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition"
+                        className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 transition"
                       >
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                       </button>
                     )}
 
@@ -333,7 +334,7 @@ export default function PitchSessionsPage() {
                       <button
                         onClick={() => handleUpdateStatus(session.id, 'CANCELLED')}
                         title="Cancelar Pitch"
-                        className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-800 dark:text-amber-400 transition"
+                        className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-800 dark:text-amber-400 transition"
                       >
                         <Ban className="h-3.5 w-3.5" />
                       </button>
@@ -342,7 +343,7 @@ export default function PitchSessionsPage() {
                     <button
                       onClick={() => handleDeleteSession(session.id)}
                       title="Eliminar Pitch"
-                      className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:border-slate-700 dark:bg-slate-800 dark:text-red-400 transition col-start-4"
+                      className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:border-slate-700 dark:bg-slate-800 dark:text-red-400 transition col-start-4"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -357,22 +358,23 @@ export default function PitchSessionsPage() {
       {/* Schedule Pitch Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl dark:bg-[#0e1526] border border-slate-100 dark:border-slate-800 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-[#0b0f19] border border-slate-100 dark:border-slate-800 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
-                <h3 className="text-base font-black text-slate-900 dark:text-white">Programar Quick Pitch</h3>
-                <p className="text-xs text-slate-500">Configura la sala interactiva para inversores</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Programar Quick Pitch</h3>
+                <p className="text-xs text-slate-400">Configura la sala interactiva para inversores</p>
               </div>
               <button
                 onClick={() => setModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                aria-label="Cerrar modal de pitch"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             {formError && (
-              <div className="flex items-center gap-2 rounded-2xl bg-red-50 p-3.5 text-xs text-red-600 dark:bg-red-950/40 dark:text-red-300 border border-red-500/20">
+              <div className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-600 dark:bg-red-950/40 dark:text-red-300 border border-red-500/20">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{formError}</span>
               </div>
@@ -380,7 +382,7 @@ export default function PitchSessionsPage() {
 
             <form onSubmit={handleCreateSession} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Título de la Sesión
                 </label>
                 <input
@@ -390,12 +392,12 @@ export default function PitchSessionsPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ej. Demo Day - Presentación Ronda Semilla"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Fecha y Hora Programada
                 </label>
                 <input
@@ -407,19 +409,19 @@ export default function PitchSessionsPage() {
                     setScheduledFor(e.target.value);
                     setFormError(null);
                   }}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
                 <p className="text-[10px] text-slate-400">Debe ser al menos 2 minutos en el futuro.</p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Duración del Pitch
                 </label>
                 <select
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 >
                   <option value={5}>5 minutos (Quick Pitch estándar)</option>
                   <option value={10}>10 minutos</option>
@@ -431,7 +433,7 @@ export default function PitchSessionsPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="w-full rounded-2xl bg-teal-600 py-3.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 shadow-lg shadow-teal-600/25 transition mt-2"
+                className="w-full rounded-xl bg-blue-600 py-3 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition mt-2"
               >
                 {creating ? 'Generando Sala y Programando...' : 'Programar y Crear Sala Virtual'}
               </button>

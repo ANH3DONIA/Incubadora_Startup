@@ -96,21 +96,21 @@ export default function MarketplacePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-600 dark:text-teal-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
               <Sparkles className="h-3.5 w-3.5" />
               Directorio de Oportunidades
             </span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-2">
             Marketplace de Startups
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Explora startups auditadas con Pitch Decks cifrados y rondas abiertas para inversión
           </p>
         </div>
 
-        <div className="text-xs font-bold text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-2xl shadow-sm self-start sm:self-auto">
-          Total disponibles: <span className="text-teal-600 dark:text-teal-400">{pagination.total} Startups</span>
+        <div className="text-xs font-semibold text-slate-500 bg-white dark:bg-[#0b0f19] border border-slate-200/80 dark:border-slate-800/80 px-4 py-2 rounded-xl self-start sm:self-auto">
+          Total disponibles: <span className="text-blue-600 dark:text-blue-400 font-bold">{pagination.total} Startups</span>
         </div>
       </div>
 
@@ -122,12 +122,12 @@ export default function MarketplacePage() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Buscar por nombre, solución, modelo de negocio o tecnología..."
-          className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-xs text-slate-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:border-slate-800 dark:bg-[#0e1526] dark:text-white transition"
+          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-[#0b0f19] dark:text-white transition"
         />
         {searchInput && (
           <button
             onClick={() => setSearchInput('')}
-            className="absolute right-4 top-3.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="absolute right-4 top-3 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             Limpiar
           </button>
@@ -145,10 +145,10 @@ export default function MarketplacePage() {
               {[1, 2, 3, 4, 5, 6].map((sk) => (
                 <div
                   key={sk}
-                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#0e1526] space-y-4 animate-pulse"
+                  className="rounded-2xl border border-slate-200/80 bg-white p-6 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-4 animate-pulse"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 w-11 rounded-xl bg-slate-200 dark:bg-slate-800" />
                     <div className="space-y-2 flex-1">
                       <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
                       <div className="h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800/60" />
@@ -185,10 +185,10 @@ export default function MarketplacePage() {
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`h-9 w-9 rounded-xl text-xs font-bold transition ${
+                        className={`h-9 w-9 rounded-lg text-xs font-semibold transition ${
                           page === pageNum
-                            ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
-                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-[#0b0f19] dark:text-slate-200'
                         }`}
                       >
                         {pageNum}

@@ -30,14 +30,14 @@ export default function AdminAuditPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white">Auditoría & Seguridad Inmutable</h1>
-        <p className="text-xs text-slate-500 mt-1">Registro de cada mutación, payload, IP y código de respuesta HTTP</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Auditoría & Seguridad Inmutable</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Registro de cada mutación, payload, IP y código de respuesta HTTP</p>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden dark:border-slate-800/80 dark:bg-[#0b0f19]">
         <div className="overflow-x-auto">
           <table className="w-full text-left font-mono text-[11px]">
-            <thead className="border-b border-slate-100 bg-slate-50 uppercase text-[10px] font-bold text-slate-500 dark:border-slate-800 dark:bg-slate-800/60">
+            <thead className="border-b border-slate-100 bg-slate-50 uppercase text-[10px] font-bold text-slate-400 dark:border-slate-800 dark:bg-slate-900/60">
               <tr>
                 <th className="p-4">Timestamp</th>
                 <th className="p-4">Método & Ruta</th>
@@ -49,13 +49,13 @@ export default function AdminAuditPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {logs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
                   <td className="p-4 text-slate-400 whitespace-nowrap">{formatDate(log.createdAt)}</td>
                   <td className="p-4 font-bold text-slate-900 dark:text-white">
-                    <span className={`px-1.5 py-0.5 rounded mr-1.5 text-[10px] ${
-                      log.method === 'POST' ? 'bg-emerald-100 text-emerald-800' :
-                      log.method === 'PUT' || log.method === 'PATCH' ? 'bg-blue-100 text-blue-800' :
-                      'bg-red-100 text-red-800'
+                    <span className={`px-1.5 py-0.5 rounded mr-1.5 text-[10px] font-bold ${
+                      log.method === 'POST' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
+                      log.method === 'PUT' || log.method === 'PATCH' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' :
+                      'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
                     }`}>
                       {log.method || 'ACTION'}
                     </span>
@@ -64,10 +64,10 @@ export default function AdminAuditPage() {
                   <td className="p-4 text-slate-600 dark:text-slate-300">
                     {log.user?.email || 'ANONYMOUS'}
                   </td>
-                  <td className="p-4 text-slate-500">{log.ipAddress || '127.0.0.1'}</td>
+                  <td className="p-4 text-slate-500 dark:text-slate-400">{log.ipAddress || '127.0.0.1'}</td>
                   <td className="p-4">
                     <span className={`font-bold ${
-                      (log.statusCode || 200) < 400 ? 'text-emerald-600' : 'text-red-500'
+                      (log.statusCode || 200) < 400 ? 'text-blue-600 dark:text-blue-400' : 'text-red-500'
                     }`}>
                       {log.statusCode || 200}
                     </span>

@@ -148,6 +148,8 @@ model Startup {
 
   @@index([industry])
   @@index([stage])
+  @@index([industry, createdAt(sort: Desc)])
+  @@index([stage, createdAt(sort: Desc)])
 }
 
 model PitchSession {
@@ -198,6 +200,7 @@ model RoomParticipant {
 
   @@index([roomId])
   @@index([userId])
+  @@index([roomId, joinedAt(sort: Desc)])
 }
 
 // ============================================================================
@@ -214,8 +217,8 @@ model Investment {
   status            InvestmentStatus  @default(PENDING)
   currency          String            @default("USD")
 
-  investor User    @relation(fields: [investorId], references: [id], onDelete: Cascade)
-  startup  Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  investor User    @relation(fields: [investorId], references: [id], onDelete: Restrict)
+  startup  Startup @relation(fields: [startupId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -223,6 +226,8 @@ model Investment {
   @@index([investorId])
   @@index([startupId])
   @@index([status])
+  @@index([paymentMethodType, status])
+  @@index([startupId, status])
 }
 
 model Ticket {
@@ -331,5 +336,5 @@ model AuditLog {
 
   @@index([action])
   @@index([userId])
-  @@index([createdAt])
+  @@index([createdAt(sort: Desc)])
 }

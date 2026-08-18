@@ -234,11 +234,26 @@ export class StartupService {
   }
 
   async delete(id: string, userId: string, userRole: string) {
-    const startup = await prisma.startup.findUnique({ where: { id } });
+    const startup = await prisma.startup.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { investments: true },
+        },
+      },
+    });
     if (!startup) throw new AppError('Startup no encontrada', 404);
 
     if (startup.userId !== userId && userRole !== 'ADMIN') {
       throw new AppError('No tienes permiso para eliminar esta startup', 403);
+    }
+
+    // Proteccion contable: no permitir borrado de startups con fondos recaudados o inversiones activas
+    if (Number(startup.amountRaised) > 0 || startup._count.investments > 0) {
+      throw new AppError(
+        'No es posible eliminar una startup con transacciones financieras o fondos recaudados registrados. Contacta a soporte para liquidación o deslistado.',
+        400
+      );
     }
 
     // Clean up encrypted file on disk

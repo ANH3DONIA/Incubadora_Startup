@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -13,7 +14,8 @@ export const api = axios.create({
 // Interceptor to attach access token
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('access_token');
+    const storeToken = useAuthStore.getState().token;
+    const token = storeToken || localStorage.getItem('access_token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -44,6 +46,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
     // Do not attempt to refresh on auth endpoints (login, register, refresh itself)
     if (
       originalRequest.url?.includes('/auth/login') ||
@@ -69,7 +75,11 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem('refresh_token');
+        const storeRefreshToken = useAuthStore.getState().refreshToken;
+        const refreshToken =
+          storeRefreshToken ||
+          (typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null);
+
         if (!refreshToken) throw new Error('No refresh token available');
 
         const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {
@@ -81,10 +91,7 @@ api.interceptors.response.use(
 
         if (!newAccessToken) throw new Error('No access token in refresh response');
 
-        localStorage.setItem('access_token', newAccessToken);
-        if (newRefreshToken) {
-          localStorage.setItem('refresh_token', newRefreshToken);
-        }
+        useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
 
         processQueue(null, newAccessToken);
 
@@ -92,12 +99,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-          window.location.href = '/login';
-        }
+        // Clear session gracefully without disruptive window.location.href reload
+        useAuthStore.getState().logout();
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;
@@ -107,4 +110,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 

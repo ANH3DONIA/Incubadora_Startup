@@ -6,23 +6,62 @@ import { sendResponse } from '../../utils/response.js';
 const paymentService = new PaymentService();
 
 export class PaymentController {
-  static async createCheckout(req: AuthRequest, res: Response, next: NextFunction) {
+  // ==========================================================================
+  // MEMBRESÍAS Y SUSCRIPCIONES
+  // ==========================================================================
+
+  static async createSubscriptionCheckout(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const result = await paymentService.createStripeCheckout(req.body, req.user!.id);
-      return sendResponse(res, 200, result, 'Sesión de checkout creada');
+      const result = await paymentService.createSubscriptionCheckout(req.body, req.user!.id);
+      return sendResponse(res, 200, result, 'Sesión de suscripción creada');
     } catch (error) {
       next(error);
     }
   }
 
-  static async createCryptoOrder(req: AuthRequest, res: Response, next: NextFunction) {
+  static async createCryptoSubscription(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const result = await paymentService.createBinanceOrder(req.body, req.user!.id);
-      return sendResponse(res, 200, result, 'Orden de Binance Pay generada');
+      const result = await paymentService.createCryptoSubscriptionOrder(req.body, req.user!.id);
+      return sendResponse(res, 200, result, 'Orden de suscripción Binance Pay generada');
     } catch (error) {
       next(error);
     }
   }
+
+  static async cancelSubscription(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await paymentService.cancelSubscription(req.user!.id);
+      return sendResponse(res, 200, result, 'Suscripción cancelada exitosamente');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ==========================================================================
+  // INVERSIONES EN STARTUPS
+  // ==========================================================================
+
+  static async createInvestmentCheckout(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await paymentService.createInvestmentCheckout(req.body, req.user!.id);
+      return sendResponse(res, 200, result, 'Sesión de checkout de inversión creada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async createCryptoInvestment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await paymentService.createCryptoInvestmentOrder(req.body, req.user!.id);
+      return sendResponse(res, 200, result, 'Orden de inversión Binance Pay generada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // ==========================================================================
+  // SANDBOX & TRANSACCIONES
+  // ==========================================================================
 
   static async confirmSandbox(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -32,7 +71,7 @@ export class PaymentController {
         req.user?.id,
         req.user?.role
       );
-      return sendResponse(res, 200, result, 'Inversión confirmada (Sandbox)');
+      return sendResponse(res, 200, result, 'Transacción confirmada (Sandbox)');
     } catch (error) {
       next(error);
     }
@@ -46,6 +85,10 @@ export class PaymentController {
       next(error);
     }
   }
+
+  // ==========================================================================
+  // WEBHOOK DE STRIPE
+  // ==========================================================================
 
   static async stripeWebhook(req: Request, res: Response, next: NextFunction) {
     try {
@@ -85,4 +128,27 @@ export class PaymentController {
       next(error);
     }
   }
+
+  // ==========================================================================
+  // ENDPOINTS LEGACY (COMPATIBILIDAD)
+  // ==========================================================================
+
+  static async createCheckout(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await paymentService.createStripeCheckout(req.body, req.user!.id);
+      return sendResponse(res, 200, result, 'Sesión de checkout creada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async createCryptoOrder(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await paymentService.createBinanceOrder(req.body, req.user!.id);
+      return sendResponse(res, 200, result, 'Orden de Binance Pay generada');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+

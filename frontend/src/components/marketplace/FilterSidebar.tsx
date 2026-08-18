@@ -27,39 +27,39 @@ export const FilterSidebar: React.FC = () => {
   const { filters, setFilter, resetFilters } = useMarketplaceStore();
 
   return (
-    <div className="w-full lg:w-64 shrink-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
+    <div className="w-full lg:w-64 shrink-0 rounded-2xl border border-slate-200/80 bg-white p-5 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
-          <Filter className="h-4 w-4 text-teal-600" />
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+          <Filter className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
           <span>Filtros</span>
         </div>
         <button
           onClick={resetFilters}
-          className="flex items-center gap-1 text-xs text-slate-500 hover:text-teal-600 dark:text-slate-400"
+          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
           title="Limpiar filtros"
         >
           <RotateCcw className="h-3 w-3" />
-          <span>Reset</span>
+          <span>Limpiar</span>
         </button>
       </div>
 
       {/* Industries */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
           Industria
         </label>
         <div className="space-y-1.5">
           {INDUSTRIES.map((ind) => (
             <label
               key={ind.value}
-              className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer hover:text-teal-600"
+              className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               <input
                 type="radio"
                 name="industry"
                 checked={filters.industry === ind.value}
                 onChange={() => setFilter('industry', ind.value)}
-                className="h-3.5 w-3.5 text-teal-600 focus:ring-teal-500 rounded border-slate-300"
+                className="h-3.5 w-3.5 text-blue-600 focus:ring-blue-500 rounded border-slate-300 dark:border-slate-700 dark:bg-slate-800"
               />
               <span>{ind.label}</span>
             </label>
@@ -69,21 +69,21 @@ export const FilterSidebar: React.FC = () => {
 
       {/* Stages */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
           Etapa de Inversión
         </label>
         <div className="space-y-1.5">
           {STAGES.map((stg) => (
             <label
               key={stg.value}
-              className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer hover:text-teal-600"
+              className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               <input
                 type="radio"
                 name="stage"
                 checked={filters.stage === stg.value}
                 onChange={() => setFilter('stage', stg.value)}
-                className="h-3.5 w-3.5 text-teal-600 focus:ring-teal-500 rounded border-slate-300"
+                className="h-3.5 w-3.5 text-blue-600 focus:ring-blue-500 rounded border-slate-300 dark:border-slate-700 dark:bg-slate-800"
               />
               <span>{stg.label}</span>
             </label>

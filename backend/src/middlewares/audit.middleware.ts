@@ -23,8 +23,14 @@ export const auditLog = async (req: Request, res: Response, next: NextFunction) 
         try {
           const bodyCopy = { ...req.body };
           if (bodyCopy.password) bodyCopy.password = '[REDACTED]';
+          if (bodyCopy.currentPassword) bodyCopy.currentPassword = '[REDACTED]';
+          if (bodyCopy.newPassword) bodyCopy.newPassword = '[REDACTED]';
+          if (bodyCopy.confirmPassword) bodyCopy.confirmPassword = '[REDACTED]';
           if (bodyCopy.refreshToken) bodyCopy.refreshToken = '[REDACTED]';
           if (bodyCopy.apiKey) bodyCopy.apiKey = '[REDACTED]';
+          if (bodyCopy.secret) bodyCopy.secret = '[REDACTED]';
+          if (bodyCopy.cvv) bodyCopy.cvv = '[REDACTED]';
+          if (bodyCopy.cardNumber) bodyCopy.cardNumber = '[REDACTED]';
           // Omit potential file buffer or large binary fields
           if (bodyCopy.pitchDeck) bodyCopy.pitchDeck = '[FILE_DATA]';
           const raw = JSON.stringify(bodyCopy);

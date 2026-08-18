@@ -28,7 +28,8 @@ export class AdminController {
   static async toggleUserStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { isActive } = req.body;
-      const user = await adminService.updateUserStatus(req.params.id as string, isActive);
+      const adminId = (req as any).user?.id;
+      const user = await adminService.updateUserStatus(req.params.id as string, isActive, adminId);
       return sendResponse(res, 200, user, 'Estado de usuario actualizado');
     } catch (error) {
       next(error);

@@ -12,19 +12,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, initAuth } = useAuthStore();
+  const { user, isAuthenticated, isHydrated, initAuth } = useAuthStore();
 
   useEffect(() => {
     initAuth();
   }, [initAuth]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isHydrated && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isHydrated, isAuthenticated, router]);
 
-  if (isLoading) {
+  if (!isHydrated) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <LoadingSpinner size="lg" label="Cargando sesión..." />
@@ -45,3 +45,4 @@ export default function DashboardLayout({
     </div>
   );
 }
+

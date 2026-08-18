@@ -30,12 +30,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-800 bg-slate-900 text-white">
+    <div className="flex h-full flex-col rounded-2xl border border-slate-800 bg-[#0b0f19] text-white">
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-slate-800 p-4">
-        <MessageSquare className="h-4 w-4 text-teal-400" />
-        <h3 className="text-sm font-bold">Chat de la Sesión</h3>
-        <span className="ml-auto rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
+        <MessageSquare className="h-4 w-4 text-blue-400" />
+        <h3 className="text-xs font-bold uppercase tracking-wider">Chat de la Sesión</h3>
+        <span className="ml-auto rounded-md bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
           {messages.length}
         </span>
       </div>
@@ -58,15 +58,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   <span className="text-[11px] font-bold text-slate-300">
                     {msg.senderName}
                   </span>
-                  <span className="rounded bg-slate-800 px-1 py-0.2 text-[9px] text-teal-400 uppercase">
+                  <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] text-blue-400 uppercase font-semibold">
                     {msg.senderRole}
                   </span>
                 </div>
                 <div
                   className={`rounded-xl px-3 py-2 text-xs max-w-[85%] leading-relaxed ${
                     isMe
-                      ? 'bg-teal-600 text-white rounded-tr-none'
-                      : 'bg-slate-800 text-slate-200 rounded-tl-none'
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-slate-700/60'
                   }`}
                 >
                   {msg.content}
@@ -85,12 +85,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Escribe un mensaje..."
-          className="flex-1 rounded-xl bg-slate-800 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+          className="flex-1 rounded-xl bg-slate-800/80 border border-slate-700 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <button
           type="submit"
           disabled={!input.trim()}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-40 transition"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-40 transition"
         >
           <Send className="h-3.5 w-3.5" />
         </button>

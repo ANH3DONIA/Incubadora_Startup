@@ -31,18 +31,18 @@ export default function AdminFinancesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white">Finanzas & Desglose de Inversiones</h1>
-        <p className="text-xs text-slate-500 mt-1">Supervisa flujos fiat (Stripe) y criptoactivos (Binance Pay)</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Finanzas & Desglose de Inversiones</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Supervisa flujos fiat (Stripe) y criptoactivos (Binance Pay)</p>
       </div>
 
       {/* Totals Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <StatCard
           title="Total Procesado"
           value={formatCurrency(finances?.totals?.overall || 0)}
           subtitle="Fiat + Cripto combinados"
           icon={DollarSign}
-          iconBg="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
+          iconBg="bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
         />
         <StatCard
           title="Stripe (Fiat USD)"
@@ -61,16 +61,16 @@ export default function AdminFinancesPage() {
       </div>
 
       {/* Transactions Table */}
-      <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden dark:border-slate-800/80 dark:bg-[#0b0f19]">
         <div className="p-5 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
             Historial de Transacciones
           </h3>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-100 bg-slate-50 uppercase text-[10px] font-bold text-slate-500 dark:border-slate-800 dark:bg-slate-800/60">
+            <thead className="border-b border-slate-100 bg-slate-50 uppercase text-[10px] font-bold text-slate-400 dark:border-slate-800 dark:bg-slate-900/60">
               <tr>
                 <th className="p-4">Inversionista</th>
                 <th className="p-4">Startup</th>
@@ -90,18 +90,18 @@ export default function AdminFinancesPage() {
                 </tr>
               ) : (
                 finances.transactions.map((tx: any) => (
-                  <tr key={tx.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                  <tr key={tx.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
                     <td className="p-4 font-bold text-slate-900 dark:text-white">
                       {tx.investor?.firstName} {tx.investor?.lastName}
                     </td>
                     <td className="p-4 font-medium text-slate-600 dark:text-slate-300">
                       {tx.startup?.name || 'Incubadora'}
                     </td>
-                    <td className="p-4 font-black text-slate-900 dark:text-white">
+                    <td className="p-4 font-bold text-slate-900 dark:text-white">
                       {formatCurrency(Number(tx.amount))}
                     </td>
                     <td className="p-4">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      <span className={`rounded-md px-2 py-0.5 text-[10px] font-semibold ${
                         tx.paymentMethodType === 'FIAT'
                           ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
                           : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
@@ -110,14 +110,14 @@ export default function AdminFinancesPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+                      <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold">
                         <CheckCircle2 className="h-3.5 w-3.5" /> {tx.status}
                       </span>
                     </td>
                     <td className="p-4 font-mono text-[10px] text-slate-400 truncate max-w-xs" title={tx.transactionHash}>
                       {tx.transactionHash || '—'}
                     </td>
-                    <td className="p-4 text-slate-500">{formatDate(tx.createdAt)}</td>
+                    <td className="p-4 text-slate-500 dark:text-slate-400">{formatDate(tx.createdAt)}</td>
                   </tr>
                 ))
               )}

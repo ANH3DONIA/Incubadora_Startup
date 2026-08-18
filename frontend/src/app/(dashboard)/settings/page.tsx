@@ -23,11 +23,14 @@ import {
   Upload,
   Trash2,
   Image as ImageIcon,
+  CreditCard,
+  Receipt,
+  Download,
 } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'company'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'company' | 'billing'>('profile');
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +49,10 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
   const [securityMessage, setSecurityMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Billing state
+  const [cancellingSub, setCancellingSub] = useState(false);
+  const [billingMessage, setBillingMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -200,27 +207,90 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!confirm('¿Estás seguro de que deseas cancelar la renovación de tu membresía?')) return;
+    setCancellingSub(true);
+    setBillingMessage(null);
+    try {
+      await api.post('/payments/subscriptions/cancel');
+      setBillingMessage({
+        type: 'success',
+        text: 'Tu membresía ha sido cancelada exitosamente. Tu plan cambiará a Free Starter.',
+      });
+      const profileRes = await api.get('/auth/profile');
+      if (profileRes.data?.data) {
+        useAuthStore.getState().setUser(profileRes.data.data);
+        setProfileData(profileRes.data.data);
+      }
+    } catch (err: any) {
+      setBillingMessage({
+        type: 'error',
+        text: err.response?.data?.message || 'Error al cancelar la membresía.',
+      });
+    } finally {
+      setCancellingSub(false);
+    }
+  };
+
+  const handleDownloadReceiptTxt = (invId: string, planName: string, amount: number, date: string) => {
+    const content = `
+============================================================
+              NEXUS VENTURES INCUBATOR LLC
+          COMPROBANTE OFICIAL DE SUSCRIPCIÓN DIGITAL
+============================================================
+No. de Factura:   ${invId}
+Fecha y Hora:     ${date}
+Estado:           PAGADO / APROBADO
+------------------------------------------------------------
+DATOS DEL CLIENTE:
+Nombre:           ${user?.firstName} ${user?.lastName}
+Email:            ${user?.email}
+Rol:              ${user?.role}
+------------------------------------------------------------
+DESGLOSE:
+Concepto:         ${planName} (Vigencia 30 Días)
+Método de Pago:   Visa •••• 4242 / Binance Pay
+------------------------------------------------------------
+TOTAL:            $${amount}.00 USD
+============================================================
+    `.trim();
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Recibo-${invId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || 'U';
+
+  const currentPlan = profileData?.subscription?.plan || user?.subscription?.plan || 'FREE';
+  const planStatus = profileData?.subscription?.status || user?.subscription?.status || 'ACTIVE';
+  const periodEndFormatted = formatDate(profileData?.subscription?.currentPeriodEnd || user?.subscription?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 3600 * 1000));
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Ajustes de Cuenta & Perfil
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Administra tus datos personales, foto de perfil, credenciales y vínculos corporativos
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Administra tus datos personales, foto de perfil, credenciales, membresías y facturación
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
         <button
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'profile'
-              ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+              ? 'bg-blue-600 text-white'
               : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
           }`}
         >
@@ -230,9 +300,9 @@ export default function SettingsPage() {
 
         <button
           onClick={() => setActiveTab('security')}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'security'
-              ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+              ? 'bg-blue-600 text-white'
               : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
           }`}
         >
@@ -242,37 +312,49 @@ export default function SettingsPage() {
 
         <button
           onClick={() => setActiveTab('company')}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition ${
             activeTab === 'company'
-              ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+              ? 'bg-blue-600 text-white'
               : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
           }`}
         >
           <Building2 className="h-4 w-4" />
           <span>{user?.role === 'ENTREPRENEUR' ? 'Mi Empresa' : 'Actividad Inversora'}</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('billing')}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition ${
+            activeTab === 'billing'
+              ? 'bg-blue-600 text-white'
+              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+          }`}
+        >
+          <CreditCard className="h-4 w-4" />
+          <span>Facturación & Membresía</span>
+        </button>
       </div>
 
       {/* TAB 1: PROFILE */}
       {activeTab === 'profile' && (
         <form onSubmit={handleUpdateProfile} className="space-y-6 animate-fade-in">
-          <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-[#0e1526] space-y-6">
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               Información de Identidad
             </h3>
 
             {profileMessage && (
               <div
-                className={`flex items-center gap-2 rounded-2xl p-4 text-xs font-semibold border ${
+                className={`flex items-center gap-2 rounded-xl p-3.5 text-xs font-medium border ${
                   profileMessage.type === 'success'
-                    ? 'border-teal-500/30 bg-teal-50 text-teal-900 dark:bg-teal-950/50 dark:text-teal-300'
+                    ? 'border-blue-500/30 bg-blue-50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-300'
                     : 'border-red-500/30 bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-300'
                 }`}
               >
                 {profileMessage.type === 'success' ? (
-                  <CheckCircle2 className="h-5 w-5 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                 ) : (
-                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+                  <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
                 )}
                 <span>{profileMessage.text}</span>
               </div>
@@ -280,7 +362,7 @@ export default function SettingsPage() {
 
             {/* Direct Computer Photo Upload Area */}
             <div className="space-y-3 pb-6 border-b border-slate-100 dark:border-slate-800/80">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Foto de Perfil
               </label>
 
@@ -296,7 +378,7 @@ export default function SettingsPage() {
                 {/* Avatar Preview */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="relative group cursor-pointer h-24 w-24 shrink-0 rounded-3xl bg-gradient-to-tr from-teal-500 to-emerald-600 text-white font-black text-2xl shadow-xl shadow-teal-500/20 flex items-center justify-center overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:scale-105 transition-all"
+                  className="relative group cursor-pointer h-20 w-20 shrink-0 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-700 text-white font-bold text-xl flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 hover:scale-105 transition-all"
                 >
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
@@ -304,7 +386,7 @@ export default function SettingsPage() {
                     initials
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-all backdrop-blur-[2px]">
-                    <Camera className="h-6 w-6" />
+                    <Camera className="h-5 w-5" />
                     <span className="text-[9px] font-bold mt-1">Cambiar</span>
                   </div>
                 </div>
@@ -317,20 +399,20 @@ export default function SettingsPage() {
                   }}
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={handleDrop}
-                  className={`flex-1 w-full rounded-2xl border-2 border-dashed p-5 text-center transition-all ${
+                  className={`flex-1 w-full rounded-xl border-2 border-dashed p-4 text-center transition-all ${
                     isDragging
-                      ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-950/20'
+                      ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20'
                       : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30'
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-left space-y-1">
-                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <Upload className="h-4 w-4 text-teal-600" />
+                    <div className="text-left space-y-0.5">
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Upload className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                         <span>Sube una foto desde tu computadora</span>
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        Arrastra y suelta tu imagen aquí o haz clic para explorar tus archivos (JPG, PNG o WebP hasta 5MB).
+                        Arrastra tu imagen aquí o haz clic para explorar (JPG, PNG o WebP hasta 5MB).
                       </p>
                     </div>
 
@@ -338,7 +420,7 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="rounded-xl bg-teal-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20 transition flex items-center gap-1.5"
+                        className="rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition flex items-center gap-1.5"
                       >
                         <ImageIcon className="h-3.5 w-3.5" />
                         <span>Seleccionar Foto</span>
@@ -351,7 +433,7 @@ export default function SettingsPage() {
                             setAvatarUrl('');
                             setProfileMessage({ type: 'success', text: 'Foto eliminada. Guarda los cambios para aplicar.' });
                           }}
-                          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300 transition flex items-center gap-1"
+                          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300 transition flex items-center gap-1"
                           title="Eliminar foto de perfil"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -367,7 +449,7 @@ export default function SettingsPage() {
             {/* Form Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Nombre
                 </label>
                 <input
@@ -375,12 +457,12 @@ export default function SettingsPage() {
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Apellido
                 </label>
                 <input
@@ -388,22 +470,22 @@ export default function SettingsPage() {
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 px-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Correo Electrónico
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                 <input
                   type="email"
                   disabled
                   value={profileData?.email || user?.email || ''}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-100 py-3 pl-11 pr-4 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 cursor-not-allowed"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-100 py-2.5 pl-10 pr-4 text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 cursor-not-allowed"
                 />
               </div>
               <p className="text-[10px] text-slate-400">El correo electrónico está vinculado a tu cuenta y tokens de sesión.</p>
@@ -413,7 +495,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={savingProfile}
-                className="rounded-2xl bg-teal-600 px-6 py-3.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 shadow-md shadow-teal-600/20 transition"
+                className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition"
               >
                 {savingProfile ? 'Guardando...' : 'Guardar Cambios de Perfil'}
               </button>
@@ -425,24 +507,24 @@ export default function SettingsPage() {
       {/* TAB 2: SECURITY */}
       {activeTab === 'security' && (
         <form onSubmit={handleChangePassword} className="space-y-6 animate-fade-in">
-          <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-[#0e1526] space-y-6">
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-              <Key className="h-4 w-4 text-teal-600" />
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+              <Key className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               Cambiar Contraseña
             </h3>
 
             {securityMessage && (
               <div
-                className={`flex items-center gap-2 rounded-2xl p-4 text-xs font-semibold border ${
+                className={`flex items-center gap-2 rounded-xl p-3.5 text-xs font-medium border ${
                   securityMessage.type === 'success'
-                    ? 'border-teal-500/30 bg-teal-50 text-teal-900 dark:bg-teal-950/50 dark:text-teal-300'
+                    ? 'border-blue-500/30 bg-blue-50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-300'
                     : 'border-red-500/30 bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-300'
                 }`}
               >
                 {securityMessage.type === 'success' ? (
-                  <CheckCircle2 className="h-5 w-5 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                 ) : (
-                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+                  <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
                 )}
                 <span>{securityMessage.text}</span>
               </div>
@@ -450,88 +532,87 @@ export default function SettingsPage() {
 
             <div className="space-y-4 max-w-lg">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Contraseña Actual
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="password"
                     required
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Nueva Contraseña
                 </label>
                 <div className="relative">
-                  <Key className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="password"
                     required
-                    minLength={8}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    placeholder="Al menos 8 caracteres..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400">
-                  Debe incluir 8+ caracteres, mayúscula, minúscula, número y símbolo especial.
-                </p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Confirmar Nueva Contraseña
                 </label>
                 <div className="relative">
-                  <Key className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    placeholder="Repite la nueva contraseña..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={savingPassword}
-                  className="rounded-2xl bg-teal-600 px-6 py-3.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 shadow-md shadow-teal-600/20 transition"
-                >
-                  {savingPassword ? 'Actualizando...' : 'Actualizar Contraseña'}
-                </button>
-              </div>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={savingPassword || !currentPassword || !newPassword || newPassword !== confirmPassword}
+                className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition"
+              >
+                {savingPassword ? 'Cambiando clave...' : 'Actualizar Contraseña'}
+              </button>
             </div>
           </div>
         </form>
       )}
 
-      {/* TAB 3: COMPANY / INVESTOR */}
+      {/* TAB 3: COMPANY */}
       {activeTab === 'company' && (
         <div className="space-y-6 animate-fade-in">
           {user?.role === 'ENTREPRENEUR' ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-[#0e1526] space-y-6">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-teal-600" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     Mi Empresa / Startup
                   </h3>
-                  <p className="text-xs text-slate-500">Datos registrados en el ecosistema de incubación</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Datos registrados en el ecosistema de incubación</p>
                 </div>
 
                 <Link
                   href="/my-startup"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700 shadow-sm"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-500"
                 >
                   <span>Editar Startup</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -539,17 +620,17 @@ export default function SettingsPage() {
               </div>
 
               {profileData?.startup ? (
-                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-4">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white">
                         {profileData.startup.name}
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {profileData.startup.industry} • {profileData.startup.stage}
                       </p>
                     </div>
-                    <span className="rounded-full bg-teal-500/10 px-3 py-1 text-xs font-bold text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                    <span className="rounded-md bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400 border border-blue-500/20">
                       Ronda Activa
                     </span>
                   </div>
@@ -557,26 +638,26 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
                     <div>
                       <p className="text-[10px] text-slate-400 uppercase font-bold">Meta de Fondeo</p>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">
                         {formatCurrency(profileData.startup.fundingGoal)}
                       </p>
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 uppercase font-bold">Recaudado</p>
-                      <p className="text-sm font-bold text-teal-600 dark:text-teal-400">
+                      <p className="text-xs font-bold text-blue-600 dark:text-blue-400">
                         {formatCurrency(profileData.startup.amountRaised)}
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-8 text-center space-y-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-800">
-                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <div className="p-8 text-center space-y-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800">
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Aún no has registrado tu startup en la incubadora.
                   </p>
                   <Link
                     href="/my-startup"
-                    className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20"
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500"
                   >
                     <Building2 className="h-4 w-4" />
                     <span>Registrar Startup Ahora</span>
@@ -585,23 +666,189 @@ export default function SettingsPage() {
               )}
             </div>
           ) : (
-            <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-[#0e1526] space-y-6">
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-teal-600" />
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 Perfil de Inversionista
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Tu cuenta cuenta con credenciales activas para evaluar pitches en tiempo real y ejecutar micro-inversiones.
               </p>
               <Link
                 href="/marketplace"
-                className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500"
               >
                 <span>Explorar Directorio de Startups</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 4: BILLING & INVOICES */}
+      {activeTab === 'billing' && (
+        <div className="space-y-6 animate-fade-in">
+          {billingMessage && (
+            <div
+              className={`flex items-center gap-2 rounded-xl p-3.5 text-xs font-medium border ${
+                billingMessage.type === 'success'
+                  ? 'border-blue-500/30 bg-blue-50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-300'
+                  : 'border-red-500/30 bg-red-50 text-red-900 dark:bg-red-950/50 dark:text-red-300'
+              }`}
+            >
+              {billingMessage.type === 'success' ? (
+                <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+              )}
+              <span>{billingMessage.text}</span>
+            </div>
+          )}
+
+          {/* Current Subscription Card */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-7 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                  Membresía Activa
+                </span>
+                <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5">
+                  Plan {currentPlan === 'ENTERPRISE' ? 'VC & Fund Suite' : currentPlan === 'PRO' ? 'Pro Incubator' : 'Free Starter'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {currentPlan !== 'FREE'
+                    ? `Tu plan incluye Quick Pitches ilimitados, Pitch Decks cifrados y Matchmaking prioritario.`
+                    : `Plan gratuito básico con 1 pitch mensual y perfil estándar en marketplace.`}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                  planStatus === 'ACTIVE'
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800'
+                    : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800'
+                }`}>
+                  <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                  {planStatus === 'ACTIVE' ? 'Activo' : 'Cancelado'}
+                </span>
+
+                <Link
+                  href="/pricing"
+                  className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 transition"
+                >
+                  {currentPlan === 'FREE' ? 'Mejorar a Pro' : 'Cambiar de Plan'}
+                </Link>
+              </div>
+            </div>
+
+            {/* Plan Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-bold uppercase text-slate-400">Próxima Renovación</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white mt-1">
+                  {currentPlan !== 'FREE' ? periodEndFormatted : 'Sin expiración'}
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-bold uppercase text-slate-400">Tarifa Mensual</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white mt-1">
+                  {currentPlan === 'ENTERPRISE' ? '$249.00 USD / mes' : currentPlan === 'PRO' ? '$49.00 USD / mes' : '$0.00 USD'}
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-bold uppercase text-slate-400">Método de Pago</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white mt-1 flex items-center gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>Visa •••• 4242</span>
+                </p>
+              </div>
+            </div>
+
+            {currentPlan !== 'FREE' && (
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  disabled={cancellingSub}
+                  onClick={handleCancelSubscription}
+                  className="text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 transition"
+                >
+                  {cancellingSub ? 'Cancelando...' : 'Cancelar renovación automática'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Billing & Invoices Table */}
+          <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden dark:border-slate-800/80 dark:bg-[#0b0f19]">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  Historial de Facturas & Recibos Digitales
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Descarga tus comprobantes oficiales con validez fiscal
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-slate-100 bg-slate-50 uppercase text-[10px] font-bold text-slate-400 dark:border-slate-800 dark:bg-slate-900/60">
+                  <tr>
+                    <th className="p-4">No. Factura</th>
+                    <th className="p-4">Concepto</th>
+                    <th className="p-4">Fecha</th>
+                    <th className="p-4">Monto</th>
+                    <th className="p-4">Estado</th>
+                    <th className="p-4 text-right">Comprobante</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                  {currentPlan !== 'FREE' ? (
+                    <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
+                      <td className="p-4 font-mono font-bold text-slate-900 dark:text-white">
+                        #INV-2026-8941
+                      </td>
+                      <td className="p-4 text-slate-700 dark:text-slate-300 font-semibold">
+                        Membresía {currentPlan === 'ENTERPRISE' ? 'VC & Fund Suite' : 'Pro Incubator'} (30 Días)
+                      </td>
+                      <td className="p-4 text-slate-500 dark:text-slate-400">
+                        {formatDate(new Date())}
+                      </td>
+                      <td className="p-4 font-bold text-slate-900 dark:text-white">
+                        ${currentPlan === 'ENTERPRISE' ? '249.00' : '49.00'} USD
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-bold text-[11px]">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Pagado
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadReceiptTxt('INV-2026-8941', currentPlan === 'ENTERPRISE' ? 'VC & Fund Suite' : 'Pro Incubator', currentPlan === 'ENTERPRISE' ? 249 : 49, formatDate(new Date()))}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                        >
+                          <Download className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                          <span>Descargar Recibo</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-400">
+                        No tienes facturas emitidas en el plan Free Starter. Al contratar un plan Pro se generarán aquí automáticamente.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

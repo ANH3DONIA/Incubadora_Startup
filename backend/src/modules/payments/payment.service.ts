@@ -2,8 +2,15 @@ import crypto from 'crypto';
 import Stripe from 'stripe';
 import { prisma } from '../../config/database.js';
 import { AppError } from '../../utils/error.js';
-import { CreateCheckoutDto, CreateCryptoOrderDto } from './payment.schema.js';
-import { Prisma } from '@prisma/client';
+import {
+  CreateSubscriptionDto,
+  CreateCryptoSubscriptionDto,
+  CreateInvestmentDto,
+  CreateCryptoInvestmentDto,
+  CreateCheckoutDto,
+  CreateCryptoOrderDto,
+} from './payment.schema.js';
+import { Prisma, SubscriptionPlan } from '@prisma/client';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key';
 const stripe = new Stripe(stripeSecret, {
@@ -11,45 +18,34 @@ const stripe = new Stripe(stripeSecret, {
 });
 
 export class PaymentService {
-  async createStripeCheckout(data: CreateCheckoutDto, userId: string) {
-    const successUrl = data.successUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/dashboard?payment=success`;
-    const cancelUrl = data.cancelUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/pricing?payment=cancelled`;
+  // ==========================================================================
+  // 1. MEMBRESÍAS Y SUSCRIPCIONES (PRO $49 / ENTERPRISE $249)
+  // ==========================================================================
 
-    const amount = data.amount || 100;
-    const amountInCents = Math.round(amount * 100);
+  async createSubscriptionCheckout(data: CreateSubscriptionDto, userId: string) {
+    const successUrl = data.successUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/settings?subscription=success`;
+    const cancelUrl = data.cancelUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/pricing?subscription=cancelled`;
 
-    if (data.startupId) {
-      const startup = await prisma.startup.findUnique({
-        where: { id: data.startupId },
-      });
-      if (!startup) throw new AppError('La startup especificada no existe', 404);
-      if (startup.userId === userId) {
-        throw new AppError('No puedes invertir en tu propia startup', 400);
-      }
-    }
+    // Precios autoritativos en Backend (Blindaje anti-tampering)
+    const planAmounts: Record<string, number> = {
+      PRO: 49,
+      ENTERPRISE: 249,
+    };
+    const amount = planAmounts[data.plan] || 49;
+    const amountInCents = amount * 100;
 
-    // If Stripe secret key is mock or test, return sandbox checkout url
+    // Entorno Sandbox / Desarrollo sin claves reales
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('mock')) {
-      const mockSessionId = `cs_test_${crypto.randomBytes(12).toString('hex')}`;
+      const mockSessionId = `sub_mock_${crypto.randomBytes(12).toString('hex')}`;
       
-      // Auto-record pending investment if startupId provided
-      if (data.startupId) {
-        await prisma.investment.create({
-          data: {
-            investorId: userId,
-            startupId: data.startupId,
-            amount: new Prisma.Decimal(amount),
-            paymentMethodType: 'FIAT',
-            currency: 'USD',
-            status: 'PENDING',
-            transactionHash: mockSessionId,
-          },
-        });
-      }
+      // En modo prueba, activar inmediatamente la suscripción en base de datos para el usuario
+      await this.activateSubscriptionInDb(userId, data.plan);
 
       return {
-        url: `${successUrl}&session_id=${mockSessionId}&mock=true`,
+        url: `${successUrl}&session_id=${mockSessionId}&mock=true&plan=${data.plan}`,
         sessionId: mockSessionId,
+        plan: data.plan,
+        amount,
       };
     }
 
@@ -61,7 +57,127 @@ export class PaymentService {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: data.startupId ? 'Inversión en Startup' : 'Suscripción Incubadora Pro',
+                name: data.plan === 'ENTERPRISE' ? 'Membresía VC & Fund Suite' : 'Membresía Pro Incubator',
+                description: 'Acceso ilimitado a Quick Pitches, Pitch Decks cifrados y Deal Flow',
+              },
+              unit_amount: amountInCents,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${successUrl}&session_id={CHECKOUT_SESSION_ID}&plan=${data.plan}`,
+        cancel_url: cancelUrl,
+        client_reference_id: userId,
+        metadata: {
+          userId,
+          type: 'SUBSCRIPTION',
+          plan: data.plan,
+        },
+      });
+
+      return { url: session.url, sessionId: session.id, plan: data.plan, amount };
+    } catch (err: any) {
+      throw new AppError(`Error al crear sesión de suscripción: ${err.message}`, 500);
+    }
+  }
+
+  async createCryptoSubscriptionOrder(data: CreateCryptoSubscriptionDto, userId: string) {
+    const planAmounts: Record<string, number> = {
+      PRO: 49,
+      ENTERPRISE: 249,
+    };
+    const amount = planAmounts[data.plan] || 49;
+    const merchantTradeNo = `SUB_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+
+    if (!process.env.BINANCE_SECRET_KEY || process.env.BINANCE_SECRET_KEY.includes('mock')) {
+      await this.activateSubscriptionInDb(userId, data.plan);
+    }
+
+    const timestamp = Date.now();
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const secretKey = process.env.BINANCE_SECRET_KEY || 'mock_secret_key';
+
+    const orderBody = {
+      merchantId: process.env.BINANCE_MERCHANT_ID || 'mock_merchant',
+      merchantTradeNo,
+      tradeType: 'WEB',
+      totalFee: amount,
+      currency: data.currency || 'USDT',
+      productType: 'Incubator Subscription',
+      productName: `Membresía ${data.plan} Incubadora`,
+      productDetail: `Acceso a plan ${data.plan}`,
+    };
+
+    const payload = `${timestamp}\n${nonce}\n${JSON.stringify(orderBody)}\n`;
+    const signature = crypto.createHmac('sha512', secretKey).update(payload).digest('hex').toUpperCase();
+
+    const checkoutUrl = `https://pay.binance.com/checkout?tradeNo=${merchantTradeNo}&amount=${amount}&currency=${data.currency || 'USDT'}`;
+
+    return {
+      merchantTradeNo,
+      checkoutUrl,
+      amount,
+      currency: data.currency || 'USDT',
+      plan: data.plan,
+      timestamp,
+      nonce,
+      signature,
+    };
+  }
+
+  // ==========================================================================
+  // 2. INVERSIONES DE CAPITAL EN STARTUPS ($50 A $10,000,000 USD)
+  // ==========================================================================
+
+  async createInvestmentCheckout(data: CreateInvestmentDto, userId: string) {
+    const successUrl = data.successUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/startup/${data.startupId}?payment=success`;
+    const cancelUrl = data.cancelUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/startup/${data.startupId}?payment=cancelled`;
+
+    const startup = await prisma.startup.findUnique({
+      where: { id: data.startupId },
+    });
+    if (!startup) throw new AppError('La startup especificada no existe', 404);
+    if (startup.userId === userId) {
+      throw new AppError('No puedes invertir en tu propia startup', 400);
+    }
+
+    const amount = data.amount;
+    const amountInCents = Math.round(amount * 100);
+
+    // Sandbox / Entorno de pruebas
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('mock')) {
+      const mockSessionId = `cs_test_${crypto.randomBytes(12).toString('hex')}`;
+      
+      await prisma.investment.create({
+        data: {
+          investorId: userId,
+          startupId: data.startupId,
+          amount: new Prisma.Decimal(amount),
+          paymentMethodType: 'FIAT',
+          currency: 'USD',
+          status: 'PENDING',
+          transactionHash: mockSessionId,
+        },
+      });
+
+      return {
+        url: `${successUrl}&session_id=${mockSessionId}&mock=true`,
+        sessionId: mockSessionId,
+        amount,
+      };
+    }
+
+    try {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Inversión en ${startup.name}`,
+                description: `Aporte de capital de ronda para ${startup.name}`,
               },
               unit_amount: amountInCents,
             },
@@ -74,44 +190,107 @@ export class PaymentService {
         client_reference_id: userId,
         metadata: {
           userId,
-          startupId: data.startupId || '',
-          type: data.type,
+          startupId: data.startupId,
+          type: 'INVESTMENT',
         },
       });
 
-      if (data.startupId) {
-        await prisma.investment.create({
-          data: {
-            investorId: userId,
-            startupId: data.startupId,
-            amount: new Prisma.Decimal(amount),
-            paymentMethodType: 'FIAT',
-            currency: 'USD',
-            status: 'PENDING',
-            transactionHash: session.id,
-          },
-        });
-      }
+      await prisma.investment.create({
+        data: {
+          investorId: userId,
+          startupId: data.startupId,
+          amount: new Prisma.Decimal(amount),
+          paymentMethodType: 'FIAT',
+          currency: 'USD',
+          status: 'PENDING',
+          transactionHash: session.id,
+        },
+      });
 
-      return { url: session.url, sessionId: session.id };
+      return { url: session.url, sessionId: session.id, amount };
     } catch (err: any) {
-      throw new AppError(`Error al crear sesión de pago: ${err.message}`, 500);
+      throw new AppError(`Error al crear sesión de inversión: ${err.message}`, 500);
     }
   }
 
-  async processSuccessfulStripePayment(sessionId: string, clientReferenceId: string, amountTotal: number, metadata?: any) {
-    const startupId = metadata?.startupId;
+  async createCryptoInvestmentOrder(data: CreateCryptoInvestmentDto, userId: string) {
+    const startup = await prisma.startup.findUnique({
+      where: { id: data.startupId },
+    });
+    if (!startup) throw new AppError('La startup especificada no existe', 404);
+    if (startup.userId === userId) {
+      throw new AppError('No puedes invertir en tu propia startup', 400);
+    }
 
+    const merchantTradeNo = `INV_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    const amount = data.amount;
+
+    await prisma.investment.create({
+      data: {
+        investorId: userId,
+        startupId: data.startupId,
+        amount: new Prisma.Decimal(amount),
+        paymentMethodType: 'CRYPTO',
+        currency: data.currency || 'USDT',
+        status: 'PENDING',
+        transactionHash: merchantTradeNo,
+      },
+    });
+
+    const timestamp = Date.now();
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const secretKey = process.env.BINANCE_SECRET_KEY || 'mock_secret_key';
+
+    const orderBody = {
+      merchantId: process.env.BINANCE_MERCHANT_ID || 'mock_merchant',
+      merchantTradeNo,
+      tradeType: 'WEB',
+      totalFee: amount,
+      currency: data.currency || 'USDT',
+      productType: 'Startup Investment',
+      productName: `Inversión en ${startup.name}`,
+      productDetail: `Aporte de capital cripto para ${startup.name}`,
+    };
+
+    const payload = `${timestamp}\n${nonce}\n${JSON.stringify(orderBody)}\n`;
+    const signature = crypto.createHmac('sha512', secretKey).update(payload).digest('hex').toUpperCase();
+
+    const checkoutUrl = `https://pay.binance.com/checkout?tradeNo=${merchantTradeNo}&amount=${amount}&currency=${data.currency || 'USDT'}`;
+
+    return {
+      merchantTradeNo,
+      checkoutUrl,
+      amount,
+      currency: data.currency || 'USDT',
+      timestamp,
+      nonce,
+      signature,
+    };
+  }
+
+  // ==========================================================================
+  // 3. PROCESAMIENTO GENERAL DE PAGOS Y WEBHOOKS
+  // ==========================================================================
+
+  async processSuccessfulStripePayment(sessionId: string, clientReferenceId: string, amountTotal: number, metadata?: any) {
+    // 1. Manejo de Suscripciones
+    if (metadata?.type === 'SUBSCRIPTION' || metadata?.plan) {
+      const planName = metadata?.plan === 'ENTERPRISE' ? 'ENTERPRISE' : 'PRO';
+      await this.activateSubscriptionInDb(clientReferenceId, planName, sessionId);
+      return;
+    }
+
+    // 2. Manejo de Inversiones en Startups
+    const startupId = metadata?.startupId;
     if (startupId) {
       const amount = amountTotal / 100;
       
-      // Check existing investment status to prevent duplicate crediting
       const existingInvestment = await prisma.investment.findUnique({
         where: { transactionHash: sessionId },
       });
 
       if (existingInvestment && existingInvestment.status === 'COMPLETED') {
-        return; // Already processed
+        return; // Ya procesada
       }
 
       await prisma.$transaction([
@@ -131,64 +310,39 @@ export class PaymentService {
     }
   }
 
-  async createBinanceOrder(data: CreateCryptoOrderDto, userId: string) {
-    const merchantTradeNo = `ORDER_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-    const amount = data.amount;
+  async activateSubscriptionInDb(userId: string, plan: 'PRO' | 'ENTERPRISE', sessionId?: string) {
+    const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 días de vigencia
+    const planEnum = plan === 'ENTERPRISE' ? SubscriptionPlan.ENTERPRISE : SubscriptionPlan.PRO;
 
-    if (data.startupId) {
-      const startup = await prisma.startup.findUnique({
-        where: { id: data.startupId },
-      });
-      if (!startup) throw new AppError('La startup especificada no existe', 404);
-      if (startup.userId === userId) {
-        throw new AppError('No puedes invertir en tu propia startup', 400);
-      }
+    await prisma.subscription.upsert({
+      where: { userId },
+      update: {
+        plan: planEnum,
+        status: 'ACTIVE',
+        stripeSubscriptionId: sessionId || `sub_${Date.now()}`,
+        currentPeriodEnd: periodEnd,
+      },
+      create: {
+        userId,
+        plan: planEnum,
+        status: 'ACTIVE',
+        stripeSubscriptionId: sessionId || `sub_${Date.now()}`,
+        currentPeriodEnd: periodEnd,
+      },
+    });
+  }
 
-      // Record pending investment in DB
-      await prisma.investment.create({
-        data: {
-          investorId: userId,
-          startupId: data.startupId,
-          amount: new Prisma.Decimal(amount),
-          paymentMethodType: 'CRYPTO',
-          currency: data.currency || 'USDT',
-          status: 'PENDING',
-          transactionHash: merchantTradeNo,
-        },
-      });
-    }
+  async cancelSubscription(userId: string) {
+    const sub = await prisma.subscription.findUnique({ where: { userId } });
+    if (!sub) throw new AppError('No tienes una suscripción activa', 404);
 
-    // Generate Binance Pay Payload & Signature
-    const timestamp = Date.now();
-    const nonce = crypto.randomBytes(16).toString('hex');
-    const secretKey = process.env.BINANCE_SECRET_KEY || 'mock_secret_key';
-
-    const orderBody = {
-      merchantId: process.env.BINANCE_MERCHANT_ID || 'mock_merchant',
-      merchantTradeNo,
-      tradeType: 'WEB',
-      totalFee: amount,
-      currency: data.currency || 'USDT',
-      productType: 'Incubator Investment',
-      productName: 'Startup Quick Pitch Investment',
-      productDetail: `Inversión para startup ${data.startupId || 'Incubadora'}`,
-    };
-
-    const payload = `${timestamp}\n${nonce}\n${JSON.stringify(orderBody)}\n`;
-    const signature = crypto.createHmac('sha512', secretKey).update(payload).digest('hex').toUpperCase();
-
-    // Simulation / Sandbox URL
-    const checkoutUrl = `https://pay.binance.com/checkout?tradeNo=${merchantTradeNo}&amount=${amount}&currency=${data.currency || 'USDT'}`;
-
-    return {
-      merchantTradeNo,
-      checkoutUrl,
-      amount,
-      currency: data.currency || 'USDT',
-      timestamp,
-      nonce,
-      signature,
-    };
+    return prisma.subscription.update({
+      where: { userId },
+      data: {
+        status: 'CANCELLED',
+        plan: 'FREE',
+      },
+    });
   }
 
   async confirmInvestmentSandbox(transactionHash: string, userId?: string, userRole?: string) {
@@ -203,12 +357,12 @@ export class PaymentService {
 
     if (!investment) throw new AppError('Transacción no encontrada', 404);
 
-    // Permission check: solo ADMIN puede confirmar manualmente en sandbox
-    if (userRole !== 'ADMIN') {
-      throw new AppError('Solo un administrador puede forzar la confirmación de pruebas sandbox', 403);
+    // Permisos: el inversor dueño de la orden o un ADMIN pueden liquidar su prueba en sandbox
+    if (userRole !== 'ADMIN' && investment.investorId !== userId) {
+      throw new AppError('No tienes autorización para confirmar esta transacción de prueba', 403);
     }
 
-    // Prevención atómica de doble acreditación con condición de estado en UPDATE
+    // Prevención atómica de doble gasto
     const [invUpdate, startupUpdate] = await prisma.$transaction([
       prisma.investment.updateMany({
         where: { transactionHash, status: { not: 'COMPLETED' } },
@@ -225,7 +379,7 @@ export class PaymentService {
     ]);
 
     if (invUpdate.count === 0) {
-      throw new AppError('Esta transacción ya fue acreditada previamente (Anti-Doble Gasto / Race Condition)', 400);
+      throw new AppError('Esta transacción ya fue acreditada previamente (Anti-Doble Gasto)', 400);
     }
 
     return { success: true, transactionHash, status: 'COMPLETED', startup: startupUpdate };
@@ -249,5 +403,42 @@ export class PaymentService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  // ==========================================================================
+  // 4. MÉTODOS DE COMPATIBILIDAD LEGACY
+  // ==========================================================================
+
+  async createStripeCheckout(data: CreateCheckoutDto, userId: string) {
+    if (data.type === 'SUBSCRIPTION' || data.plan) {
+      return this.createSubscriptionCheckout({
+        plan: (data.plan as any) || (data.amount && data.amount > 100 ? 'ENTERPRISE' : 'PRO'),
+        successUrl: data.successUrl,
+        cancelUrl: data.cancelUrl,
+      }, userId);
+    }
+
+    return this.createInvestmentCheckout({
+      startupId: data.startupId || '',
+      amount: data.amount || 100,
+      successUrl: data.successUrl,
+      cancelUrl: data.cancelUrl,
+    }, userId);
+  }
+
+  async createBinanceOrder(data: CreateCryptoOrderDto, userId: string) {
+    if (data.plan) {
+      return this.createCryptoSubscriptionOrder({
+        plan: (data.plan as any) || 'PRO',
+        currency: data.currency || 'USDT',
+      }, userId);
+    }
+
+    return this.createCryptoInvestmentOrder({
+      startupId: data.startupId || '',
+      amount: data.amount,
+      currency: data.currency || 'USDT',
+    }, userId);
+  }
 }
+
 

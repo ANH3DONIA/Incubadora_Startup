@@ -22,24 +22,24 @@ export const PitchTimer: React.FC<PitchTimerProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-2xl px-5 py-2.5 shadow-lg border transition-all ${
+      className={`flex items-center gap-2.5 rounded-xl px-4 py-2 border transition-all ${
         isCritical
           ? 'bg-red-600 border-red-500 text-white animate-pulse'
           : isWarning
           ? 'bg-amber-500 border-amber-400 text-white'
-          : 'bg-slate-900/90 border-slate-700 text-white backdrop-blur'
+          : 'bg-[#0b0f19]/90 border-slate-800 text-white backdrop-blur'
       }`}
     >
       {isCritical ? (
         <AlertTriangle className="h-5 w-5 animate-bounce" />
       ) : (
-        <Timer className="h-5 w-5 text-teal-400" />
+        <Timer className="h-5 w-5 text-blue-400" />
       )}
       <div className="flex flex-col">
-        <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
-          {isActive ? 'Pitch en Vivo' : 'Tiempo de Presentación'}
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          {isActive ? 'Pitch en Vivo' : 'Tiempo Restante'}
         </span>
-        <span className="font-mono text-2xl font-black tracking-tight">{formatted}</span>
+        <span className="font-mono text-xl font-bold tracking-tight">{formatted}</span>
       </div>
     </div>
   );

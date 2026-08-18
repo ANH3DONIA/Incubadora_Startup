@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatDate } from '@/lib/utils';
-import { Calendar as CalendarIcon, Plus, Video, Clock, Users, ArrowRight, BookOpen, AlertCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Video, Clock, Users, ArrowRight, BookOpen, AlertCircle, X } from 'lucide-react';
 
 export default function EventsPage() {
   const { user } = useAuthStore();
@@ -99,8 +99,8 @@ export default function EventsPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">Eventos & Quick Pitches</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Eventos & Quick Pitches</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Calendario de rondas en vivo, demo days y masterclasses dinámicas de la incubadora
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function EventsPage() {
             setFormError(null);
             setModalOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-teal-700 shadow-md shadow-teal-600/20 transition"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 transition"
         >
           <Plus className="h-4 w-4" />
           <span>Crear Evento / Taller</span>
@@ -120,14 +120,14 @@ export default function EventsPage() {
       {/* Upcoming Pitches Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Video className="h-4 w-4 text-teal-600" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+          <Video className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
             Próximos Quick Pitches en Vivo ({pitches.length})
           </h2>
         </div>
 
         {pitches.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-6 text-center text-xs text-slate-500 dark:border-slate-800/80 dark:bg-[#0b0f19]">
             No hay pitches programados en las próximas 24 horas.
           </div>
         ) : (
@@ -135,19 +135,19 @@ export default function EventsPage() {
             {pitches.map((pitch) => (
               <div
                 key={pitch.id}
-                className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4"
+                className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-4"
               >
                 <div>
-                  <span className="rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-700 dark:bg-teal-950/60 dark:text-teal-300">
+                  <span className="rounded-md bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-500/20">
                     {pitch.startup?.industry || 'Startup'}
                   </span>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white mt-3">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-3">
                     {pitch.title}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Presentado por <b className="text-slate-800 dark:text-slate-200">{pitch.startup?.name}</b>
                   </p>
-                  <p className="text-xs text-teal-600 dark:text-teal-400 font-semibold mt-2 flex items-center gap-1.5">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-2 flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5" />
                     {formatDate(pitch.scheduledFor)} ({pitch.durationMinutes} min)
                   </p>
@@ -155,7 +155,7 @@ export default function EventsPage() {
 
                 <Link
                   href={`/pitch-room/${pitch.room?.id || pitch.id}`}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-2.5 text-xs font-bold text-white hover:bg-teal-700 transition"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 transition"
                 >
                   <span>Entrar a la Sala</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -169,8 +169,8 @@ export default function EventsPage() {
       {/* General Calendar Events from Database */}
       <div className="space-y-4 pt-4">
         <div className="flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4 text-indigo-600" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+          <CalendarIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
             Talleres & Eventos Comunitarios ({events.length})
           </h2>
         </div>
@@ -186,32 +186,42 @@ export default function EventsPage() {
                   setFormError(null);
                   setModalOpen(true);
                 }}
-                className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700"
+                className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500"
               >
                 Crear Primer Evento
               </button>
             }
           />
         ) : (
-          <div className="rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
-            {events.map((event) => (
-              <div key={event.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">{event.title}</h4>
-                  {event.description && (
-                    <p className="text-xs text-slate-500 leading-relaxed max-w-xl">{event.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((evt) => (
+              <div
+                key={evt.id}
+                className="rounded-2xl border border-slate-200/80 bg-white p-6 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-4 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-500/20">
+                      Masterclass
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      {formatDate(evt.startTime)}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">{evt.title}</h3>
+                  {evt.description && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                      {evt.description}
+                    </p>
                   )}
-                  <p className="text-[11px] text-slate-400">
-                    Organizado por: {event.user?.firstName} {event.user?.lastName}
-                  </p>
                 </div>
-                <div className="text-right sm:text-right shrink-0">
-                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 block">
-                    {formatDate(event.startTime)}
+
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex items-center justify-between text-xs text-slate-500">
+                  <span className="flex items-center gap-1.5 text-slate-400">
+                    <Users className="h-3.5 w-3.5" />
+                    Abierto a la comunidad
                   </span>
-                  <span className="text-[10px] text-slate-400">
-                    Hasta {new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' }).format(new Date(event.endTime))}
-                  </span>
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">Programado</span>
                 </div>
               </div>
             ))}
@@ -222,14 +232,15 @@ export default function EventsPage() {
       {/* Create Event Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Crear Evento en Calendario</h3>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-[#0b0f19] border border-slate-100 dark:border-slate-800 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Crear Evento en Calendario</h3>
               <button
                 onClick={() => setModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                aria-label="Cerrar modal de evento"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -242,7 +253,7 @@ export default function EventsPage() {
 
             <form onSubmit={handleCreateEvent} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Título del Evento
                 </label>
                 <input
@@ -251,12 +262,12 @@ export default function EventsPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ej. Masterclass: Valuaciones y Cap Tables"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Descripción
                 </label>
                 <textarea
@@ -264,13 +275,13 @@ export default function EventsPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Temario y detalles del evento..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                     Inicio (Futuro)
                   </label>
                   <input
@@ -279,12 +290,12 @@ export default function EventsPage() {
                     min={getMinDateTime()}
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                     Fin
                   </label>
                   <input
@@ -293,7 +304,7 @@ export default function EventsPage() {
                     min={startTime || getMinDateTime()}
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </div>
               </div>
@@ -301,7 +312,7 @@ export default function EventsPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="w-full rounded-2xl bg-teal-600 py-3 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 shadow-md shadow-teal-600/20"
+                className="w-full rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
               >
                 {creating ? 'Guardando en Base de Datos...' : 'Publicar Evento'}
               </button>
