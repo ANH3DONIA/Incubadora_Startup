@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { Rocket, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff, Sparkles, ShieldCheck } from 'lucide-react';
+import { Rocket, Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,19 +33,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickDemo = (role: 'founder' | 'investor' | 'admin') => {
-    if (role === 'admin') {
-      setEmail('admin@incubator.com');
-      setPassword('Password123!');
-    } else if (role === 'founder') {
-      setEmail('founder@fintech.io');
-      setPassword('Password123!');
-    } else {
-      setEmail('investor@ventures.com');
-      setPassword('Password123!');
-    }
-  };
-
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-8 dark:border-slate-800/80 dark:bg-[#0b0f19] space-y-6 animate-fade-in">
@@ -60,37 +47,6 @@ export default function LoginPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">Accede a tu cuenta de fundador o inversor</p>
-        </div>
-
-        {/* Demo Fast Fill Pill Bar */}
-        <div className="rounded-xl bg-slate-50/80 dark:bg-slate-900/60 p-3 border border-slate-100 dark:border-slate-800/80 space-y-2">
-          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            <span>Accesos Demo Rápidos</span>
-            <Sparkles className="h-3 w-3 text-blue-500" />
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('founder')}
-              className="rounded-lg bg-white dark:bg-slate-800 py-1.5 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              Fundador
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('investor')}
-              className="rounded-lg bg-white dark:bg-slate-800 py-1.5 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              Inversor
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('admin')}
-              className="rounded-lg bg-white dark:bg-slate-800 py-1.5 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              Admin
-            </button>
-          </div>
         </div>
 
         {error && (

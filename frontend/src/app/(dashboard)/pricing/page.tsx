@@ -30,10 +30,10 @@ export default function PricingPage() {
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'binance'>('stripe');
   
   // Checkout Form State
-  const [cardHolder, setCardHolder] = useState(user ? `${user.firstName} ${user.lastName}` : 'Carlos Santana');
-  const [cardNumber, setCardNumber] = useState('4242 •••• •••• 4242');
-  const [cardExp, setCardExp] = useState('12/28');
-  const [cardCvc, setCardCvc] = useState('888');
+  const [cardHolder, setCardHolder] = useState(user ? `${user.firstName} ${user.lastName}` : '');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExp, setCardExp] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
   const [processing, setProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -392,6 +392,7 @@ inmediata de los privilegios Pro/Enterprise en la plataforma.
                           required
                           value={cardNumber}
                           onChange={(e) => setCardNumber(e.target.value)}
+                          placeholder="•••• •••• •••• ••••"
                           className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                         />
                       </div>
