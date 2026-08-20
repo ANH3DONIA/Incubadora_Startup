@@ -136,7 +136,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       <div className="p-3.5 bg-gradient-to-br from-blue-600/5 to-indigo-600/10 border border-blue-500/15 rounded-xl text-center">
-        <p className="text-xs text-blue-700 dark:text-blue-300 font-bold">Nexus VC Pro</p>
+        <p className="text-xs text-blue-700 dark:text-blue-300 font-bold">IncubaTech Pro</p>
         <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Rondas de inversión y salas de pitch</p>
       </div>
     </div>

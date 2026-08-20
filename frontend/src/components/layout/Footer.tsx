@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
                 <Rocket className="h-4 w-4" />
               </div>
               <span className="text-base font-bold text-slate-900 dark:text-white">
-                Nexus<span className="text-blue-600 dark:text-blue-400 font-extrabold">Ventures</span>
+                Incuba<span className="text-blue-600 dark:text-blue-400 font-extrabold">Tech</span>
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -42,7 +42,7 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">Legal & Transparencia</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              © {new Date().getFullYear()} Nexus Ventures Inc. Todos los derechos reservados.
+              © {new Date().getFullYear()} IncubaTech Inc. Todos los derechos reservados.
             </p>
           </div>
         </div>

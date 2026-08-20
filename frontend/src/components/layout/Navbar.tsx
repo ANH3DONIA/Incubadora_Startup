@@ -71,7 +71,7 @@ export const Navbar: React.FC = () => {
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                Nexus<span className="text-blue-600 dark:text-blue-400 font-extrabold">Ventures</span>
+                Incuba<span className="text-blue-600 dark:text-blue-400 font-extrabold">Tech</span>
               </span>
               <span className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 border border-blue-500/20">
                 PRO

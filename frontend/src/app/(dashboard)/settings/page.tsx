@@ -235,7 +235,7 @@ export default function SettingsPage() {
   const handleDownloadReceiptTxt = (invId: string, planName: string, amount: number, date: string) => {
     const content = `
 ============================================================
-              NEXUS VENTURES INCUBATOR LLC
+                INCUBATECH PLATFORM LLC
           COMPROBANTE OFICIAL DE SUSCRIPCIÓN DIGITAL
 ============================================================
 No. de Factura:   ${invId}

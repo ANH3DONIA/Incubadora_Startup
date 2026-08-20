@@ -37,6 +37,38 @@ export default function PricingPage() {
   const [processing, setProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
+  // Formateo y validación de campos de tarjeta
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 16);
+    const formatted = digitsOnly.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setCardNumber(formatted);
+  };
+
+  const handleCardExpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 4);
+    if (digitsOnly.length >= 2) {
+      const month = parseInt(digitsOnly.slice(0, 2), 10);
+      if (month > 12) {
+        digitsOnly = '12' + digitsOnly.slice(2);
+      } else if (month === 0) {
+        digitsOnly = '01' + digitsOnly.slice(2);
+      }
+      setCardExp(`${digitsOnly.slice(0, 2)}/${digitsOnly.slice(2)}`);
+    } else {
+      setCardExp(digitsOnly);
+    }
+  };
+
+  const handleCardCvcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setCardCvc(digitsOnly);
+  };
+
+  const handleCardHolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const clean = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s.'-]/g, '').slice(0, 50);
+    setCardHolder(clean);
+  };
+
   // Digital Invoice / Receipt State
   const [completedInvoice, setCompletedInvoice] = useState<{
     invoiceId: string;
@@ -115,9 +147,30 @@ export default function PricingPage() {
     e.preventDefault();
     if (!selectedPlan) return;
 
-    setProcessing(true);
     setCheckoutError(null);
 
+    // Validación rigurosa de tarjeta en modo Stripe
+    if (paymentMethod === 'stripe') {
+      const digitsOnly = cardNumber.replace(/\D/g, '');
+      if (digitsOnly.length < 15 || digitsOnly.length > 16) {
+        setCheckoutError('Por favor ingresa un número de tarjeta válido (15 o 16 dígitos).');
+        return;
+      }
+      if (cardExp.length !== 5 || !cardExp.includes('/')) {
+        setCheckoutError('Por favor ingresa una fecha de vencimiento válida (formato MM/AA).');
+        return;
+      }
+      if (cardCvc.length < 3 || cardCvc.length > 4) {
+        setCheckoutError('Por favor ingresa un código de seguridad CVC/CVV válido (3 o 4 dígitos).');
+        return;
+      }
+      if (cardHolder.trim().length < 3) {
+        setCheckoutError('Por favor ingresa el nombre completo del titular de la tarjeta.');
+        return;
+      }
+    }
+
+    setProcessing(true);
     const planCode = selectedPlan.code;
 
     try {
@@ -148,6 +201,7 @@ export default function PricingPage() {
       // Generar Recibo / Factura Oficial Digital
       const now = new Date();
       const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const last4 = cardNumber.replace(/\D/g, '').slice(-4) || '4242';
 
       setCompletedInvoice({
         invoiceId: `INV-2026-${Math.floor(100000 + Math.random() * 900000)}`,
@@ -155,7 +209,7 @@ export default function PricingPage() {
         date: now.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
         planName: selectedPlan.name,
         amount: selectedPlan.amount,
-        paymentMethod: paymentMethod === 'stripe' ? 'Tarjeta de Crédito (Visa •••• 4242)' : 'Binance Pay (USDT TRC20)',
+        paymentMethod: paymentMethod === 'stripe' ? `Tarjeta de Crédito (Visa •••• ${last4})` : 'Binance Pay (USDT TRC20)',
         periodEnd: nextMonth.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }),
       });
     } catch (err: any) {
@@ -169,7 +223,7 @@ export default function PricingPage() {
     if (!completedInvoice) return;
     const content = `
 ============================================================
-              NEXUS VENTURES INCUBATOR LLC
+                INCUBATECH PLATFORM LLC
           COMPROBANTE OFICIAL DE SUSCRIPCIÓN DIGITAL
 ============================================================
 No. de Factura:   ${completedInvoice.invoiceId}
@@ -374,25 +428,33 @@ inmediata de los privilegios Pro/Enterprise en la plataforma.
                       <input
                         type="text"
                         required
+                        maxLength={50}
                         value={cardHolder}
-                        onChange={(e) => setCardHolder(e.target.value)}
+                        onChange={handleCardHolderChange}
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                        placeholder="Nombre completo"
+                        placeholder="Nombre completo tal como aparece en la tarjeta"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                        Número de Tarjeta
-                      </label>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Número de Tarjeta
+                        </label>
+                        <span className="text-[10px] font-mono text-slate-400">
+                          {cardNumber.replace(/\D/g, '').length}/16
+                        </span>
+                      </div>
                       <div className="relative">
                         <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                         <input
                           type="text"
+                          inputMode="numeric"
                           required
+                          maxLength={19}
                           value={cardNumber}
-                          onChange={(e) => setCardNumber(e.target.value)}
-                          placeholder="•••• •••• •••• ••••"
+                          onChange={handleCardNumberChange}
+                          placeholder="4242 •••• •••• 4242"
                           className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                         />
                       </div>
@@ -405,9 +467,11 @@ inmediata de los privilegios Pro/Enterprise en la plataforma.
                         </label>
                         <input
                           type="text"
+                          inputMode="numeric"
                           required
+                          maxLength={5}
                           value={cardExp}
-                          onChange={(e) => setCardExp(e.target.value)}
+                          onChange={handleCardExpChange}
                           className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white text-center"
                           placeholder="MM/AA"
                         />
@@ -418,10 +482,11 @@ inmediata de los privilegios Pro/Enterprise en la plataforma.
                         </label>
                         <input
                           type="password"
+                          inputMode="numeric"
                           required
                           maxLength={4}
                           value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value)}
+                          onChange={handleCardCvcChange}
                           className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white text-center"
                           placeholder="•••"
                         />
@@ -477,7 +542,7 @@ inmediata de los privilegios Pro/Enterprise en la plataforma.
                 {/* Comprobante Digital */}
                 <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/90 p-5 dark:border-slate-700 dark:bg-slate-900/60 font-mono text-xs space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <span className="font-bold text-slate-900 dark:text-white">NEXUS VENTURES</span>
+                    <span className="font-bold text-slate-900 dark:text-white">INCUBATECH</span>
                     <span className="text-[11px] text-blue-600 dark:text-blue-400 font-bold">{completedInvoice.invoiceId}</span>
                   </div>
 

@@ -99,7 +99,7 @@ export default function RegisterPage() {
           </div>
           <div className="flex items-center justify-center gap-1.5 pt-1">
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Nexus<span className="text-blue-600 dark:text-blue-400 font-extrabold">Ventures</span>
+              Incuba<span className="text-blue-600 dark:text-blue-400 font-extrabold">Tech</span>
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Crea tu Cuenta</h2>

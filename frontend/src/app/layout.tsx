@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 
 export const metadata: Metadata = {
-  title: 'Incubator QuickPitch - Plataforma de Inversión y Quick Pitches',
+  title: 'IncubaTech - Plataforma de Incubación & Quick Pitches',
   description:
     'Conecta startups innovadoras con inversionistas ángeles y fondos VC a través de Quick Pitches en vivo y Marketplace seguro.',
 };
