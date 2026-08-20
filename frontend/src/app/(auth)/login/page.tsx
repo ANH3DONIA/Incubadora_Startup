@@ -27,7 +27,11 @@ export default function LoginPage() {
       login(tokens.accessToken, tokens.refreshToken, user);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Credenciales inválidas. Por favor verifica tus datos.');
+      if (!err.response) {
+        setError('No se pudo conectar con el servidor backend (http://localhost:3001). Asegúrate de tener corriendo "npm run dev".');
+      } else {
+        setError(err.response.data?.message || 'Credenciales inválidas. Por favor verifica tus datos.');
+      }
     } finally {
       setLoading(false);
     }

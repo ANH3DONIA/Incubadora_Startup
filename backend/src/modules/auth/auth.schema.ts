@@ -12,8 +12,8 @@ export const registerSchema = z.object({
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
       .max(72, 'La contraseña no puede exceder 72 caracteres')
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_.\-])[A-Za-z\d@$!%*?&#^()_.\-]{8,72}$/,
-        'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&#^()_.-)'
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,72}$/,
+        'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un símbolo especial'
       ),
     firstName: z
       .string()
@@ -65,8 +65,8 @@ export const changePasswordSchema = z.object({
       .min(8, 'La nueva contraseña debe tener al menos 8 caracteres')
       .max(72, 'La contraseña no puede exceder 72 caracteres')
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_-])[A-Za-z\d@$!%*?&#^()_-]{8,72}$/,
-        'La nueva contraseña debe contener mayúsculas, minúsculas, números y al menos un carácter especial (@$!%*?&#^()_-)'
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,72}$/,
+        'La nueva contraseña debe contener mayúsculas, minúsculas, números y al menos un carácter o símbolo especial'
       ),
   }),
 });

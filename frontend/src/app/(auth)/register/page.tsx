@@ -38,7 +38,7 @@ export default function RegisterPage() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
-  const hasSpecial = /[@$!%*?&#^()_.\-]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
   const isPasswordValid = hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,10 +58,10 @@ export default function RegisterPage() {
 
     try {
       const { data } = await api.post('/auth/register', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
-        firstName,
-        lastName,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
         role,
       });
 
@@ -69,8 +69,20 @@ export default function RegisterPage() {
       login(tokens.accessToken, tokens.refreshToken, user);
       router.push('/dashboard');
     } catch (err: any) {
+      if (!err.response) {
+        setErrorDetails({
+          general: 'No se pudo conectar con el servidor backend (http://localhost:3001). Asegúrate de tener corriendo el comando "npm run dev".',
+          fields: {},
+        });
+        return;
+      }
+
       const resp = err.response?.data;
       const fieldErrorsMap: Record<string, string> = {};
+
+      if (resp?.message?.toLowerCase().includes('email ya está registrado')) {
+        fieldErrorsMap.email = 'Este correo electrónico ya está registrado. ¿Deseas iniciar sesión?';
+      }
 
       if (Array.isArray(resp?.errors)) {
         resp.errors.forEach((item: any) => {
@@ -278,7 +290,7 @@ export default function RegisterPage() {
                 </div>
                 <div className={`flex items-center gap-1.5 sm:col-span-2 ${hasSpecial ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400'}`}>
                   {hasSpecial ? <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> : <div className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700 ml-1" />}
-                  <span>Un símbolo (@$!%*?&#^()_.-)</span>
+                  <span>Un símbolo especial (!@#$%...)</span>
                 </div>
               </div>
             </div>
