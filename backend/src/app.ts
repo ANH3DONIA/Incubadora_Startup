@@ -29,10 +29,7 @@ export const createApp = () => {
   }));
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // Permite cualquier origen de Vercel, localhost o apps cliente
-        callback(null, origin || '*');
-      },
+      origin: true,
       credentials: true,
     })
   );
