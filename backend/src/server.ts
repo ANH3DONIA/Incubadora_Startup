@@ -12,7 +12,9 @@ const server = http.createServer(app);
 // Setup Socket.IO Server
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      callback(null, origin || '*');
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },

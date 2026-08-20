@@ -71,7 +71,7 @@ export default function RegisterPage() {
     } catch (err: any) {
       if (!err.response) {
         setErrorDetails({
-          general: 'No se pudo conectar con el servidor backend (http://localhost:3001). Asegúrate de tener corriendo el comando "npm run dev".',
+          general: 'No se pudo establecer conexión con el servidor API. Por favor verifica tu conexión a internet o el estado del backend.',
           fields: {},
         });
         return;

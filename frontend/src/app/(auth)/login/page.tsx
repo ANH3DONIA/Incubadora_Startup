@@ -28,7 +28,7 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       if (!err.response) {
-        setError('No se pudo conectar con el servidor backend (http://localhost:3001). Asegúrate de tener corriendo "npm run dev".');
+        setError('No se pudo establecer conexión con el servidor API. Por favor verifica tu conexión a internet o el estado del backend.');
       } else {
         setError(err.response.data?.message || 'Credenciales inválidas. Por favor verifica tus datos.');
       }
