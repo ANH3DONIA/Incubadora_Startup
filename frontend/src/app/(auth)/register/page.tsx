@@ -120,10 +120,10 @@ export default function RegisterPage() {
 
         {/* Role Selector Tabs */}
         <div className="space-y-2">
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center">
+          <p id="role-selector-label" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center">
             Tipo de Perfil
-          </label>
-          <div className="grid grid-cols-2 gap-3">
+          </p>
+          <div className="grid grid-cols-2 gap-3" role="group" aria-labelledby="role-selector-label">
             <button
               type="button"
               onClick={() => setRole('ENTREPRENEUR')}
@@ -179,10 +179,11 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <label htmlFor="reg-firstName" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Nombre
               </label>
               <input
+                id="reg-firstName"
                 type="text"
                 required
                 minLength={2}
@@ -198,10 +199,11 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <label htmlFor="reg-lastName" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Apellido
               </label>
               <input
+                id="reg-lastName"
                 type="text"
                 required
                 minLength={2}
@@ -219,12 +221,13 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <label htmlFor="reg-email" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Correo Electrónico
             </label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
               <input
+                id="reg-email"
                 type="email"
                 required
                 value={email}
@@ -240,12 +243,13 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <label htmlFor="reg-password" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Contraseña
             </label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
               <input
+                id="reg-password"
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
@@ -259,6 +263,7 @@ export default function RegisterPage() {
               />
               <button
                 type="button"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >

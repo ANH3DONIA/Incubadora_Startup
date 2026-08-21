@@ -24,11 +24,10 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     const token = authHeader.split(' ')[1];
-    const secret = process.env.JWT_ACCESS_SECRET;
-    if (!secret && process.env.NODE_ENV === 'production') {
-      throw new Error('FATAL: JWT_ACCESS_SECRET no configurada en producción');
+    const jwtSecret = process.env.JWT_ACCESS_SECRET;
+    if (!jwtSecret) {
+      throw new Error('FATAL: JWT_ACCESS_SECRET no está definida. Configura esta variable en tu archivo .env');
     }
-    const jwtSecret = secret || 'dev-jwt-access-secret-key-32-chars-long-min';
 
     const decoded = jwt.verify(token, jwtSecret) as {
       userId: string;

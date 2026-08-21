@@ -7,18 +7,18 @@ import { RegisterDto, LoginDto } from './auth.schema.js';
 export class AuthService {
   private getAccessSecret(): string {
     const secret = process.env.JWT_ACCESS_SECRET;
-    if (!secret && process.env.NODE_ENV === 'production') {
-      throw new Error('FATAL: JWT_ACCESS_SECRET no está definida en el entorno de producción');
+    if (!secret) {
+      throw new Error('FATAL: JWT_ACCESS_SECRET no está definida. Configura esta variable en tu archivo .env');
     }
-    return secret || 'dev-jwt-access-secret-key-32-chars-long-min';
+    return secret;
   }
 
   private getRefreshSecret(): string {
     const secret = process.env.JWT_REFRESH_SECRET;
-    if (!secret && process.env.NODE_ENV === 'production') {
-      throw new Error('FATAL: JWT_REFRESH_SECRET no está definida en el entorno de producción');
+    if (!secret) {
+      throw new Error('FATAL: JWT_REFRESH_SECRET no está definida. Configura esta variable en tu archivo .env');
     }
-    return secret || 'dev-jwt-refresh-secret-key-32-chars-long-min';
+    return secret;
   }
 
   private generateTokens(userId: string) {

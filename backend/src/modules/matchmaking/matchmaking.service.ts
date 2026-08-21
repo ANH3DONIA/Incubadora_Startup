@@ -49,29 +49,29 @@ export class MatchmakingService {
   }
 
   async getMatches(userId: string) {
-    const preferences = await prisma.matchmakingPreference.findUnique({
-      where: { userId },
-    });
-
-    // Exclude startups owned by the requesting user themselves
-    const allStartups = await prisma.startup.findMany({
-      where: {
-        userId: { not: userId },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+    const [preferences, allStartups] = await Promise.all([
+      prisma.matchmakingPreference.findUnique({
+        where: { userId },
+      }),
+      prisma.startup.findMany({
+        where: {
+          userId: { not: userId },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
+          ratings: {
+            select: { score: true },
           },
         },
-        ratings: {
-          select: { score: true },
-        },
-      },
-    });
+      }),
+    ]);
 
     const minTicket = preferences?.minTicketSize ? Number(preferences.minTicketSize) : null;
     const maxTicket = preferences?.maxTicketSize ? Number(preferences.maxTicketSize) : null;

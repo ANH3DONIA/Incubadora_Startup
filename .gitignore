@@ -40,8 +40,12 @@ backend/uploads/
 # Documentation & Audits
 AUDIT*.md
 part*.md
+scratch*
+extracted_images/
+*.docx
 
 # IDEs
 .vscode
 .idea
+
 

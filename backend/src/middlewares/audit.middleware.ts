@@ -19,21 +19,31 @@ export const auditLog = async (req: Request, res: Response, next: NextFunction) 
       const ip = (req.headers['x-forwarded-for'] as string) || req.ip || req.socket.remoteAddress || 'UNKNOWN';
 
       let sanitizedPayload: string | null = null;
-      if (req.body && typeof req.body === 'object') {
+      if (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) {
         try {
-          const bodyCopy = { ...req.body };
-          if (bodyCopy.password) bodyCopy.password = '[REDACTED]';
-          if (bodyCopy.currentPassword) bodyCopy.currentPassword = '[REDACTED]';
-          if (bodyCopy.newPassword) bodyCopy.newPassword = '[REDACTED]';
-          if (bodyCopy.confirmPassword) bodyCopy.confirmPassword = '[REDACTED]';
-          if (bodyCopy.refreshToken) bodyCopy.refreshToken = '[REDACTED]';
-          if (bodyCopy.apiKey) bodyCopy.apiKey = '[REDACTED]';
-          if (bodyCopy.secret) bodyCopy.secret = '[REDACTED]';
-          if (bodyCopy.cvv) bodyCopy.cvv = '[REDACTED]';
-          if (bodyCopy.cardNumber) bodyCopy.cardNumber = '[REDACTED]';
-          // Omit potential file buffer or large binary fields
-          if (bodyCopy.pitchDeck) bodyCopy.pitchDeck = '[FILE_DATA]';
-          const raw = JSON.stringify(bodyCopy);
+          const sensitiveFields = new Set([
+            'password',
+            'currentPassword',
+            'newPassword',
+            'confirmPassword',
+            'refreshToken',
+            'apiKey',
+            'secret',
+            'cvv',
+            'cardNumber',
+          ]);
+          const sanitizedObj: Record<string, any> = {};
+          for (const [key, value] of Object.entries(req.body)) {
+            if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+            if (sensitiveFields.has(key)) {
+              sanitizedObj[key] = '[REDACTED]';
+            } else if (key === 'pitchDeck') {
+              sanitizedObj[key] = '[FILE_DATA]';
+            } else {
+              sanitizedObj[key] = value;
+            }
+          }
+          const raw = JSON.stringify(sanitizedObj);
           sanitizedPayload = raw.length > 1000 ? raw.slice(0, 1000) + '... [TRUNCATED]' : raw;
         } catch {
           sanitizedPayload = '[UNSERIALIZABLE_PAYLOAD]';

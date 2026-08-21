@@ -30,11 +30,10 @@ export const setupPitchRoomSocket = (io: Server) => {
       }
 
       const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
-      const secret = process.env.JWT_ACCESS_SECRET;
-      if (!secret && process.env.NODE_ENV === 'production') {
-        return next(new Error('SERVER_CONFIG_ERROR: JWT_ACCESS_SECRET no configurada'));
+      const jwtSecret = process.env.JWT_ACCESS_SECRET;
+      if (!jwtSecret) {
+        return next(new Error('SERVER_CONFIG_ERROR: JWT_ACCESS_SECRET no está definida'));
       }
-      const jwtSecret = secret || 'dev-jwt-access-secret-key-32-chars-long-min';
 
       const decoded = jwt.verify(token, jwtSecret) as { userId: string };
 

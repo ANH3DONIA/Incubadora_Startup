@@ -94,21 +94,23 @@ export class PaymentController {
     try {
       const sig = req.headers['stripe-signature'] as string;
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      const stripeKey = process.env.STRIPE_SECRET_KEY;
 
       let event: any;
-      if (webhookSecret && sig && (req as any).rawBody) {
+
+      // Modo producción / con claves reales: verificar firma criptográfica
+      if (webhookSecret && sig && (req as any).rawBody && stripeKey && !stripeKey.includes('mock')) {
         try {
-          const stripeInstance = (paymentService as any).stripe || new (await import('stripe')).default(
-            process.env.STRIPE_SECRET_KEY || 'sk_test_mock',
-            { apiVersion: '2025-02-24.acacia' as any }
-          );
-          event = stripeInstance.webhooks.constructEvent((req as any).rawBody, sig, webhookSecret);
+          const { default: Stripe } = await import('stripe');
+          const stripeClient = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
+          event = stripeClient.webhooks.constructEvent((req as any).rawBody, sig, webhookSecret);
         } catch (err: any) {
           console.error('⚠️ [Stripe Webhook Signature Verification Failed]:', err.message);
           return res.status(400).send(`Webhook Signature Error: ${err.message}`);
         }
       } else {
-        if (process.env.NODE_ENV === 'production') {
+        // Modo simulado / desarrollo académico: aceptar el body directamente
+        if (process.env.NODE_ENV === 'production' && stripeKey && !stripeKey.includes('mock')) {
           return res.status(400).json({ error: 'Firma de webhook de Stripe requerida en producción' });
         }
         event = req.body;

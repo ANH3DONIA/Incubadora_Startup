@@ -7,13 +7,12 @@ const AUTH_TAG_LENGTH = 16;
 const getKey = (): Buffer => {
   const key = process.env.ENCRYPTION_KEY;
   if (!key) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('FATAL: ENCRYPTION_KEY no está definida en el entorno de producción');
-    }
-    // Clave de desarrollo controlada de 32 bytes
-    return Buffer.from('dev-encryption-key-32-bytes-len!');
+    throw new Error('FATAL: ENCRYPTION_KEY no está definida. Configura esta variable en tu archivo .env');
   }
-  return Buffer.from(key.padEnd(32, '0').slice(0, 32));
+  if (key.length < 32) {
+    throw new Error('FATAL: ENCRYPTION_KEY debe tener al menos 32 caracteres');
+  }
+  return Buffer.from(key.slice(0, 32));
 };
 
 export const encryptBuffer = (buffer: Buffer): Buffer => {

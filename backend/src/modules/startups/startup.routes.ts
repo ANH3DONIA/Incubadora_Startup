@@ -4,7 +4,7 @@ import { StartupController } from './startup.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { authorize } from '../../middlewares/rbac.middleware.js';
 import { validateRequest } from '../../middlewares/validate.middleware.js';
-import { createStartupSchema, updateStartupSchema } from './startup.schema.js';
+import { createStartupSchema, updateStartupSchema, startupQuerySchema } from './startup.schema.js';
 
 const router = Router();
 const upload = multer({
@@ -20,7 +20,7 @@ const upload = multer({
 });
 
 // Public / Authenticated read routes
-router.get('/', StartupController.findAll);
+router.get('/', validateRequest(startupQuerySchema), StartupController.findAll);
 router.get('/my', authenticate, StartupController.getMyStartup);
 router.get('/:id', StartupController.findById);
 

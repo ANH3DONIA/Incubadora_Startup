@@ -3,7 +3,14 @@ import { AppError } from '../../utils/error.js';
 
 export class AdminService {
   async getDashboardStats() {
-    const [totalUsers, totalStartups, totalPitches, totalInvestedAgg] = await Promise.all([
+    const [
+      totalUsers,
+      totalStartups,
+      totalPitches,
+      totalInvestedAgg,
+      recentUsers,
+      recentAuditLogs,
+    ] = await Promise.all([
       prisma.user.count(),
       prisma.startup.count(),
       prisma.pitchSession.count(),
@@ -11,37 +18,35 @@ export class AdminService {
         _sum: { amount: true },
         where: { status: 'COMPLETED' },
       }),
+      prisma.user.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          createdAt: true,
+        },
+      }),
+      prisma.auditLog.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
     ]);
 
     const totalInvested = totalInvestedAgg._sum.amount ? Number(totalInvestedAgg._sum.amount) : 0;
-
-    const recentUsers = await prisma.user.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        createdAt: true,
-      },
-    });
-
-    const recentAuditLogs = await prisma.auditLog.findMany({
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
 
     return {
       stats: {

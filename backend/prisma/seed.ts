@@ -24,145 +24,150 @@ async function main() {
   const defaultPassword = await bcrypt.hash('Password123!', 12);
 
   // 2. Create Users
-  const adminUser = await prisma.user.create({
-    data: {
-      email: 'admin@incubator.com',
-      passwordHash: defaultPassword,
-      firstName: 'Carlos',
-      lastName: 'Santana',
-      role: UserRole.ADMIN,
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    },
-  });
-
-  const entrepreneur1 = await prisma.user.create({
-    data: {
-      email: 'founder@fintech.io',
-      passwordHash: defaultPassword,
-      firstName: 'Elena',
-      lastName: 'Gómez',
-      role: UserRole.ENTREPRENEUR,
-      avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-    },
-  });
-
-  const entrepreneur2 = await prisma.user.create({
-    data: {
-      email: 'sofia@biocure.health',
-      passwordHash: defaultPassword,
-      firstName: 'Sofía',
-      lastName: 'Mendoza',
-      role: UserRole.ENTREPRENEUR,
-      avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
-    },
-  });
-
-  const entrepreneur3 = await prisma.user.create({
-    data: {
-      email: 'lucas@ecopulse.energy',
-      passwordHash: defaultPassword,
-      firstName: 'Lucas',
-      lastName: 'Alvarado',
-      role: UserRole.ENTREPRENEUR,
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-    },
-  });
-
-  const investor1 = await prisma.user.create({
-    data: {
-      email: 'investor@ventures.com',
-      passwordHash: defaultPassword,
-      firstName: 'Roberto',
-      lastName: 'Kaufman',
-      role: UserRole.INVESTOR,
-      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    },
-  });
-
-  const investor2 = await prisma.user.create({
-    data: {
-      email: 'valeria@angelcapital.co',
-      passwordHash: defaultPassword,
-      firstName: 'Valeria',
-      lastName: 'Ríos',
-      role: UserRole.INVESTOR,
-      avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-    },
-  });
+  const [
+    adminUser,
+    entrepreneur1,
+    entrepreneur2,
+    entrepreneur3,
+    investor1,
+    investor2,
+  ] = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: 'admin@incubator.com',
+        passwordHash: defaultPassword,
+        firstName: 'Carlos',
+        lastName: 'Santana',
+        role: UserRole.ADMIN,
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'founder@fintech.io',
+        passwordHash: defaultPassword,
+        firstName: 'Elena',
+        lastName: 'Gómez',
+        role: UserRole.ENTREPRENEUR,
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'sofia@biocure.health',
+        passwordHash: defaultPassword,
+        firstName: 'Sofía',
+        lastName: 'Mendoza',
+        role: UserRole.ENTREPRENEUR,
+        avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'lucas@ecopulse.energy',
+        passwordHash: defaultPassword,
+        firstName: 'Lucas',
+        lastName: 'Alvarado',
+        role: UserRole.ENTREPRENEUR,
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'investor@ventures.com',
+        passwordHash: defaultPassword,
+        firstName: 'Roberto',
+        lastName: 'Kaufman',
+        role: UserRole.INVESTOR,
+        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'valeria@angelcapital.co',
+        passwordHash: defaultPassword,
+        firstName: 'Valeria',
+        lastName: 'Ríos',
+        role: UserRole.INVESTOR,
+        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+      },
+    }),
+  ]);
 
   // 3. Create Startups
-  const startup1 = await prisma.startup.create({
-    data: {
-      userId: entrepreneur1.id,
-      name: 'PayFlow AI',
-      industry: 'Fintech',
-      stage: 'Seed',
-      fundingGoal: 250000,
-      amountRaised: 145000,
-      description:
-        'Automatización inteligente de conciliación de pagos y prevención de fraude en tiempo real para Neobancos y E-commerce con modelos LLM y Web3.',
-    },
-  });
-
-  const startup2 = await prisma.startup.create({
-    data: {
-      userId: entrepreneur2.id,
-      name: 'BioCure Health',
-      industry: 'Healthtech',
-      stage: 'Pre-Seed',
-      fundingGoal: 180000,
-      amountRaised: 60000,
-      description:
-        'Plataforma de diagnóstico temprano con visión computacional aplicada a imágenes dermatológicas y telemedicina descentralizada.',
-    },
-  });
-
-  const startup3 = await prisma.startup.create({
-    data: {
-      userId: entrepreneur3.id,
-      name: 'EcoPulse Energy',
-      industry: 'Cleantech',
-      stage: 'Seed',
-      fundingGoal: 400000,
-      amountRaised: 280000,
-      description:
-        'Baterías modulares de flujo y gestión inteligente de microrredes solares para optimización de consumo industrial mediante IoT.',
-    },
-  });
+  const [startup1, startup2, startup3] = await Promise.all([
+    prisma.startup.create({
+      data: {
+        userId: entrepreneur1.id,
+        name: 'PayFlow AI',
+        industry: 'Fintech',
+        stage: 'Seed',
+        fundingGoal: 250000,
+        amountRaised: 145000,
+        description:
+          'Automatización inteligente de conciliación de pagos y prevención de fraude en tiempo real para Neobancos y E-commerce con modelos LLM y Web3.',
+      },
+    }),
+    prisma.startup.create({
+      data: {
+        userId: entrepreneur2.id,
+        name: 'BioCure Health',
+        industry: 'Healthtech',
+        stage: 'Pre-Seed',
+        fundingGoal: 180000,
+        amountRaised: 60000,
+        description:
+          'Plataforma de diagnóstico temprano con visión computacional aplicada a imágenes dermatológicas y telemedicina descentralizada.',
+      },
+    }),
+    prisma.startup.create({
+      data: {
+        userId: entrepreneur3.id,
+        name: 'EcoPulse Energy',
+        industry: 'Cleantech',
+        stage: 'Seed',
+        fundingGoal: 400000,
+        amountRaised: 280000,
+        description:
+          'Baterías modulares de flujo y gestión inteligente de microrredes solares para optimización de consumo industrial mediante IoT.',
+      },
+    }),
+  ]);
 
   // 4. Create Pitch Sessions (Scheduled in future)
   const now = Date.now();
-  const pitch1 = await prisma.pitchSession.create({
-    data: {
-      startupId: startup1.id,
-      title: 'PayFlow AI - Ronda Seed Quick Pitch',
-      scheduledFor: new Date(now + 2 * 3600 * 1000), // in 2 hours
-      durationMinutes: 15,
-      status: PitchSessionStatus.SCHEDULED,
-      room: {
-        create: {
-          accessCode: 'PITCH1',
+  const [pitch1, pitch2] = await Promise.all([
+    prisma.pitchSession.create({
+      data: {
+        startupId: startup1.id,
+        title: 'PayFlow AI - Ronda Seed Quick Pitch',
+        scheduledFor: new Date(now + 2 * 3600 * 1000), // in 2 hours
+        durationMinutes: 15,
+        status: PitchSessionStatus.SCHEDULED,
+        room: {
+          create: {
+            accessCode: 'PITCH1',
+          },
         },
       },
-    },
-    include: { room: true },
-  });
-
-  const pitch2 = await prisma.pitchSession.create({
-    data: {
-      startupId: startup2.id,
-      title: 'BioCure Health - Pre-Seed Demo',
-      scheduledFor: new Date(now + 24 * 3600 * 1000), // tomorrow
-      durationMinutes: 10,
-      status: PitchSessionStatus.SCHEDULED,
-      room: {
-        create: {
-          accessCode: 'PITCH2',
+      include: { room: true },
+    }),
+    prisma.pitchSession.create({
+      data: {
+        startupId: startup2.id,
+        title: 'BioCure Health - Pre-Seed Demo',
+        scheduledFor: new Date(now + 24 * 3600 * 1000), // tomorrow
+        durationMinutes: 10,
+        status: PitchSessionStatus.SCHEDULED,
+        room: {
+          create: {
+            accessCode: 'PITCH2',
+          },
         },
       },
-    },
-    include: { room: true },
-  });
+      include: { room: true },
+    }),
+  ]);
 
   // 5. Create Investments (Fiat & Crypto)
   await prisma.investment.createMany({

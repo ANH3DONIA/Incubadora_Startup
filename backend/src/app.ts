@@ -27,9 +27,18 @@ export const createApp = () => {
   app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   }));
+  const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : ['http://localhost:3000'];
+
   app.use(
     cors({
-      origin: true,
+      origin: (origin, callback) => {
+        // Permitir requests sin origin (ej. Postman, curl, mobile apps)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`Origen no permitido por CORS: ${origin}`));
+      },
       credentials: true,
     })
   );
