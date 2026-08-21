@@ -6,7 +6,7 @@ import { prisma } from './config/database.js';
 import { redis } from './config/redis.js';
 import { setupPitchRoomSocket } from './sockets/pitchRoom.socket.js';
 
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 const app = createApp();
 const server = http.createServer(app);
 
@@ -41,8 +41,8 @@ cron.schedule('0 3 * * *', async () => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Incubator API & WebSockets running at http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Incubator API & WebSockets running at http://0.0.0.0:${PORT}`);
   console.log(`📡 Socket.IO server ready for realtime pitch sessions`);
   console.log(`⏰ Daily database maintenance cron scheduled`);
 });

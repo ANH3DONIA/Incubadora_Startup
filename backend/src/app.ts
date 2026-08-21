@@ -56,10 +56,13 @@ export const createApp = () => {
   // Audit Log Middleware
   app.use(auditLog);
 
-  // Health check
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  // Health checks
+  const healthHandler = (_req: express.Request, res: express.Response) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  };
+  app.get('/api/health', healthHandler);
+  app.get('/health', healthHandler);
+  app.get('/', healthHandler);
 
   // API Routes
   app.use('/api/auth', authRoutes);
