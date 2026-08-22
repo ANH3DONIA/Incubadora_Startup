@@ -5,13 +5,18 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
-let dbUrl = process.env.DATABASE_URL || '';
+let dbUrl = (process.env.DATABASE_URL || '').trim().replace(/^["']|["']$/g, '');
 
-// Auto-corrección si el hostname de Neon quedó truncado en variables de entorno de la nube
+// Auto-corrección si el hostname de Neon quedó truncado o con comillas
 if (dbUrl.includes('.aws.neon.') && !dbUrl.includes('.aws.neon.tech')) {
   dbUrl = dbUrl.replace('.aws.neon.', '.aws.neon.tech/');
 } else if (dbUrl.includes('.aws.neon/') || dbUrl.includes('.aws.neon:')) {
   dbUrl = dbUrl.replace('.aws.neon', '.aws.neon.tech');
+}
+
+// Ensure sslmode=require for Neon
+if (dbUrl.includes('neon.tech') && !dbUrl.includes('sslmode=')) {
+  dbUrl += dbUrl.includes('?') ? '&sslmode=require' : '?sslmode=require';
 }
 
 export const prisma =
