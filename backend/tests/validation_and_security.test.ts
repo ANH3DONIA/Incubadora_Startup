@@ -24,6 +24,23 @@ describe('Authentication, Financial & Calendar Validation Schemas Suite', () => 
     assert.equal(result.success, true, 'Valid payload must successfully parse');
   });
 
+  test('1.1 Name Validation: Rejects firstName and lastName containing digits or invalid symbols', () => {
+    const invalidNames = ['Angel123', 'John99', '12345', 'Carlos_Santana', 'Elena@'];
+    for (const name of invalidNames) {
+      const payload = {
+        body: {
+          email: 'test@example.com',
+          password: 'Password123!',
+          firstName: name,
+          lastName: 'Valenzuela',
+          role: 'ENTREPRENEUR',
+        },
+      };
+      const result = registerSchema.safeParse(payload);
+      assert.equal(result.success, false, `Name "${name}" containing digits/symbols must be rejected`);
+    }
+  });
+
   test('2. Password Complexity: Rejects weak passwords lacking special characters or numbers', () => {
     const weakPasswords = [
       'password',       // no uppercase, no number, no symbol

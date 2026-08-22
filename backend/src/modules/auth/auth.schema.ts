@@ -19,12 +19,20 @@ export const registerSchema = z.object({
       .string()
       .trim()
       .min(2, 'El nombre debe tener al menos 2 caracteres')
-      .max(50, 'El nombre no puede exceder 50 caracteres'),
+      .max(50, 'El nombre no puede exceder 50 caracteres')
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/,
+        'El nombre solo debe contener letras, espacios y acentos válidos (sin números)'
+      ),
     lastName: z
       .string()
       .trim()
       .min(2, 'El apellido debe tener al menos 2 caracteres')
-      .max(50, 'El apellido no puede exceder 50 caracteres'),
+      .max(50, 'El apellido no puede exceder 50 caracteres')
+      .regex(
+        /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/,
+        'El apellido solo debe contener letras, espacios y acentos válidos (sin números)'
+      ),
     role: z.enum(['ENTREPRENEUR', 'INVESTOR']).default('ENTREPRENEUR'),
   }),
 });
@@ -51,8 +59,20 @@ export const refreshSchema = z.object({
 
 export const updateProfileSchema = z.object({
   body: z.object({
-    firstName: z.string().trim().min(2, 'El nombre debe tener al menos 2 caracteres').max(50, 'Máximo 50 caracteres').optional(),
-    lastName: z.string().trim().min(2, 'El apellido debe tener al menos 2 caracteres').max(50, 'Máximo 50 caracteres').optional(),
+    firstName: z
+      .string()
+      .trim()
+      .min(2, 'El nombre debe tener al menos 2 caracteres')
+      .max(50, 'Máximo 50 caracteres')
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/, 'El nombre solo debe contener letras y espacios')
+      .optional(),
+    lastName: z
+      .string()
+      .trim()
+      .min(2, 'El apellido debe tener al menos 2 caracteres')
+      .max(50, 'Máximo 50 caracteres')
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/, 'El apellido solo debe contener letras y espacios')
+      .optional(),
     avatarUrl: z.string().max(2000000, 'La imagen no puede exceder 2MB').optional().or(z.literal('')).or(z.null()),
   }),
 });

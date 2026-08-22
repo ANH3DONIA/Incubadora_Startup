@@ -45,7 +45,24 @@ export default function RegisterPage() {
     e.preventDefault();
     setErrorDetails(null);
 
-    // Pre-flight client check
+    // Pre-flight client checks
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+    if (!nameRegex.test(firstName.trim())) {
+      setErrorDetails({
+        general: 'El nombre solo debe contener letras (sin números ni caracteres especiales).',
+        fields: { firstName: 'Ingresa un nombre válido sin números.' },
+      });
+      return;
+    }
+
+    if (!nameRegex.test(lastName.trim())) {
+      setErrorDetails({
+        general: 'El apellido solo debe contener letras (sin números ni caracteres especiales).',
+        fields: { lastName: 'Ingresa un apellido válido sin números.' },
+      });
+      return;
+    }
+
     if (!isPasswordValid) {
       setErrorDetails({
         general: 'La contraseña no cumple con todos los requisitos de seguridad.',

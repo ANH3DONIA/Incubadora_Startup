@@ -1,5 +1,10 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import dotenv from 'dotenv';
+dotenv.config();
+if (!process.env.ENCRYPTION_KEY) {
+  process.env.ENCRYPTION_KEY = 'nexus_secret_enc_key_32bytes_!ab';
+}
 import { encryptBuffer, decryptBuffer } from '../src/utils/crypto.js';
 
 describe('Security & Cryptography Suite (AES-256-GCM)', () => {
