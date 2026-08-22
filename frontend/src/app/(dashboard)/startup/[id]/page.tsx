@@ -81,6 +81,43 @@ export default function StartupDetailPage() {
     if (startupId) fetchStartup();
   }, [startupId]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const sessionId = params.get('session_id');
+
+    if (paymentStatus === 'success' && sessionId) {
+      const verifyPayment = async () => {
+        try {
+          const { data } = await api.post('/payments/verify-session', { sessionId });
+          if (data.data?.startup) {
+            setStartup(data.data.startup);
+          } else {
+            const refreshed = await api.get(`/startups/${startupId}`);
+            setStartup(refreshed.data.data);
+          }
+          setPaymentMessage({
+            type: 'success',
+            text: '¡Inversión confirmada y acreditada exitosamente en la startup!',
+          });
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) {
+          console.error('Error verificando sesión de pago:', err);
+        }
+      };
+
+      verifyPayment();
+    } else if (paymentStatus === 'cancelled') {
+      setPaymentMessage({
+        type: 'error',
+        text: 'El proceso de inversión fue cancelado.',
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [startupId]);
+
   if (loading) return <LoadingSpinner size="lg" label="Cargando ficha de startup..." />;
   if (!startup) {
     return (

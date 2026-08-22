@@ -86,6 +86,16 @@ export class PaymentController {
     }
   }
 
+  static async verifySession(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { sessionId } = req.body;
+      const result = await paymentService.verifyStripeSession(sessionId);
+      return sendResponse(res, 200, result, 'Sesión de pago verificada exitosamente');
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // ==========================================================================
   // WEBHOOK DE STRIPE
   // ==========================================================================

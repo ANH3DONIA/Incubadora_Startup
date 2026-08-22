@@ -67,6 +67,8 @@ router.post(
   PaymentController.confirmSandbox
 );
 
+router.post('/verify-session', authenticate, PaymentController.verifySession);
+
 router.get('/my-investments', authenticate, PaymentController.getMyInvestments);
 
 export default router;

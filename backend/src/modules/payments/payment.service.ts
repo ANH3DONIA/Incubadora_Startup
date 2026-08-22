@@ -400,6 +400,64 @@ export class PaymentService {
     return { success: true, transactionHash, status: 'COMPLETED', startup: startupUpdate };
   }
 
+  async verifyStripeSession(sessionId: string) {
+    if (!sessionId) throw new AppError('sessionId es requerido', 400);
+
+    if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock')) {
+      try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        if (session.payment_status === 'paid' || session.status === 'complete') {
+          await this.processSuccessfulStripePayment(
+            session.id,
+            session.client_reference_id || '',
+            session.amount_total || 0,
+            session.metadata
+          );
+        }
+      } catch (err: any) {
+        console.error('⚠️ [Stripe Session Retrieve Error]:', err.message);
+      }
+    } else {
+      const existingInvestment = await prisma.investment.findUnique({
+        where: { transactionHash: sessionId },
+      });
+      if (existingInvestment && existingInvestment.status !== 'COMPLETED') {
+        await prisma.$transaction([
+          prisma.investment.update({
+            where: { id: existingInvestment.id },
+            data: { status: 'COMPLETED' },
+          }),
+          prisma.startup.update({
+            where: { id: existingInvestment.startupId },
+            data: {
+              amountRaised: {
+                increment: existingInvestment.amount,
+              },
+            },
+          }),
+        ]);
+      }
+    }
+
+    const investment = await prisma.investment.findUnique({
+      where: { transactionHash: sessionId },
+      include: {
+        startup: {
+          include: {
+            user: { select: { id: true, firstName: true, lastName: true, email: true } },
+            pitchSessions: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      status: investment?.status || 'COMPLETED',
+      startup: investment?.startup || null,
+    };
+  }
+
   async getMyInvestments(userId: string) {
     return prisma.investment.findMany({
       where: { investorId: userId },
