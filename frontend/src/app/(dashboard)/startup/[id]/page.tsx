@@ -126,6 +126,8 @@ export default function StartupDetailPage() {
         const { data } = await api.post('/payments/investments/checkout', {
           amount: numInvestAmount,
           startupId: startup.id,
+          successUrl: `${window.location.origin}/startup/${startup.id}?payment=success`,
+          cancelUrl: `${window.location.origin}/startup/${startup.id}?payment=cancelled`,
         });
 
         if (data.data?.url) {

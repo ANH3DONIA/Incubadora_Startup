@@ -17,14 +17,28 @@ const stripe = new Stripe(stripeSecret, {
   apiVersion: '2025-02-24.acacia' as any,
 });
 
+const getFrontendBaseUrl = (providedUrl?: string): string => {
+  if (providedUrl) {
+    try {
+      return new URL(providedUrl).origin;
+    } catch {
+      // fallback
+    }
+  }
+  const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+  const origins = corsOrigin.split(',').map((o) => o.trim().replace(/\/$/, ''));
+  return origins.find((o) => o.startsWith('https://')) || origins[0] || 'http://localhost:3000';
+};
+
 export class PaymentService {
   // ==========================================================================
   // 1. MEMBRESÍAS Y SUSCRIPCIONES (PRO $49 / ENTERPRISE $249)
   // ==========================================================================
 
   async createSubscriptionCheckout(data: CreateSubscriptionDto, userId: string) {
-    const successUrl = data.successUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/settings?subscription=success`;
-    const cancelUrl = data.cancelUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/pricing?subscription=cancelled`;
+    const baseUrl = getFrontendBaseUrl(data.successUrl || data.cancelUrl);
+    const successUrl = data.successUrl || `${baseUrl}/settings?subscription=success`;
+    const cancelUrl = data.cancelUrl || `${baseUrl}/pricing?subscription=cancelled`;
 
     // Precios autoritativos en Backend (Blindaje anti-tampering)
     const planAmounts: Record<string, number> = {
@@ -131,8 +145,9 @@ export class PaymentService {
   // ==========================================================================
 
   async createInvestmentCheckout(data: CreateInvestmentDto, userId: string) {
-    const successUrl = data.successUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/startup/${data.startupId}?payment=success`;
-    const cancelUrl = data.cancelUrl || `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/startup/${data.startupId}?payment=cancelled`;
+    const baseUrl = getFrontendBaseUrl(data.successUrl || data.cancelUrl);
+    const successUrl = data.successUrl || `${baseUrl}/startup/${data.startupId}?payment=success`;
+    const cancelUrl = data.cancelUrl || `${baseUrl}/startup/${data.startupId}?payment=cancelled`;
 
     const startup = await prisma.startup.findUnique({
       where: { id: data.startupId },

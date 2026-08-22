@@ -177,6 +177,8 @@ export default function PricingPage() {
       if (paymentMethod === 'stripe') {
         const { data } = await api.post('/payments/subscriptions/checkout', {
           plan: planCode,
+          successUrl: `${window.location.origin}/settings?subscription=success`,
+          cancelUrl: `${window.location.origin}/pricing?subscription=cancelled`,
         });
 
         if (data.data?.url && !data.data.url.includes('mock=true')) {
